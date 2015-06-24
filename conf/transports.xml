@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Transports>
+	<Transport type="http">
+		<Protocol type="as2">
+			<Setting name="test">123</Setting>
+			<Setting name="test1">123</Setting>
+			<Setting name="test2">123</Setting>
+			<Setting name="test3">123</Setting>
+		</Protocol>
+		<Setting name="name">AS2 HTTP server</Setting>
+		<Setting name="port">4080</Setting>
+		<Setting name="secure">false</Setting>
+		<Setting name="contextPath">/as2</Setting>
+	</Transport>
+</Transports>
+
