@@ -6,10 +6,10 @@ import org.redoubt.api.protocol.IProtocolManager;
 import org.redoubt.api.protocol.IProtocolSettings;
 import org.redoubt.api.transport.ITransport;
 import org.redoubt.api.transport.ITransportSettings;
-import org.redoubt.protocol.As2ProtocolSettings;
 import org.redoubt.protocol.ProtocolException;
 import org.redoubt.protocol.XmlProtocolManager;
 import org.redoubt.protocol.as2.As2Protocol;
+import org.redoubt.protocol.as2.As2ProtocolSettings;
 import org.redoubt.transport.SettingsHolder;
 import org.redoubt.transport.TransportException;
 import org.redoubt.transport.http.HttpTransport;
@@ -17,7 +17,7 @@ import org.redoubt.transport.http.HttpTransportSettings;
 
 public class Factory {
 	private static Factory sInstance;
-	private static XmlProtocolManager sProtocolManager;
+	private static IProtocolManager sProtocolManager;
 	private static final Object SINGLETON_LOCK = new Object();
 	
 	private static final Logger sLogger = Logger.getLogger(Factory.class);

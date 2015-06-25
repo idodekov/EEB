@@ -1,8 +1,10 @@
 package org.redoubt.application.configuration;
 
+import java.nio.file.Path;
+
 import org.redoubt.api.configuration.IServerConfigurationManager;
 
-public class XmlConfiguration implements IServerConfigurationManager {
+public class XmlConfigurationManager implements IServerConfigurationManager {
     
     @Override
     public void loadConfiguration() {
@@ -17,15 +19,21 @@ public class XmlConfiguration implements IServerConfigurationManager {
     }
 
     @Override
-    public String getTransportWorkFolder() {
+    public Path getTransportWorkFolder() {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public String getProtocolWorkFolder() {
+    public Path getProtocolWorkFolder() {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    @Override
+    public int getShutDownPort() {
+        // TODO Auto-generated method stub
+        return 0;
     }
 
 }

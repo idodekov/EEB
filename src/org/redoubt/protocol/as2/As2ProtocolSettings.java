@@ -1,4 +1,4 @@
-package org.redoubt.protocol;
+package org.redoubt.protocol.as2;
 
 import org.redoubt.api.protocol.IProtocolSettings;
 import org.redoubt.transport.SettingsHolder;
