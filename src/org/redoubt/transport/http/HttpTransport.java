@@ -11,40 +11,61 @@ import org.redoubt.transport.TransportException;
 public class HttpTransport extends BaseTransport {
 	private static final Logger sLogger = Logger.getLogger(HttpTransport.class);
 	private HttpTransportSettings settings;
+	private Server server;
 	
 	@Override
 	public void init(ITransportSettings settings) throws TransportException {
 		this.settings = (HttpTransportSettings) settings;
+		setRunning(false);
+		
+		int port = this.settings.getPort();
+        sLogger.debug("Port is [" + port + "].");
+        server = new Server(port);
+        
+        String contextPath = this.settings.getContextPath();
+        sLogger.debug("Context path is [" + contextPath + "].");
+        ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+        context.setContextPath(contextPath);
+        
+        server.setHandler(context);
+        
+        context.addServlet(new ServletHolder(new HttpListener(this.settings)), "/");
 	}
 
 	@Override
 	public void start() throws TransportException {
-		sLogger.debug("Preparing to start HTTP transport [" + settings.getName() + "].");
-		int port = settings.getPort();
-		sLogger.debug("Port is [" + port + "].");
-		Server server = new Server(port);
-
-		String contextPath = settings.getContextPath();
-		sLogger.debug("Context path is [" + contextPath + "].");
-		ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
-		context.setContextPath(contextPath);
-		
-		server.setHandler(context);
-		
-		context.addServlet(new ServletHolder(new HttpListener(settings)), "/");
-		
-		try {
-			server.start();
-			sLogger.debug("HTTP transport [" + settings.getName() + "] is started.");
-		} catch (Exception e) {
-			sLogger.error("Error starting HTTP transport. " + e.getMessage(), e);
-			throw new TransportException(e);
-		}
+	    if(isRunning()) {
+	        sLogger.warn("HTTP transport [" + settings.getName() + "] can't be started - it's already running.");
+	    } else {
+    		sLogger.debug("Preparing to start HTTP transport [" + settings.getName() + "].");
+    
+    		try {
+    			server.start();
+    			setRunning(true);
+    			sLogger.info("HTTP transport [" + settings.getName() + "] is started.");
+    		} catch (Exception e) {
+    			sLogger.error("Error starting HTTP transport. " + e.getMessage(), e);
+    			throw new TransportException(e);
+    		}
+	    }
 	}
 
 	@Override
 	public void stop() throws TransportException {
-		// TODO Auto-generated method stub
+		if(isRunning()) {
+		    sLogger.debug("Preparing to stop HTTP transport [" + settings.getName() + "].");
+		    
+            try {
+                server.stop();
+                setRunning(false);
+                sLogger.info("HTTP transport [" + settings.getName() + "] is stopped.");
+            } catch (Exception e) {
+                sLogger.error("Error stopping HTTP transport. " + e.getMessage(), e);
+                throw new TransportException(e);
+            }
+		} else {
+		    sLogger.warn("HTTP transport [" + settings.getName() + "] can't be stopped - it's not running.");
+		}
 
 	}
 }
