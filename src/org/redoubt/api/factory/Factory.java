@@ -1,11 +1,13 @@
 package org.redoubt.api.factory;
 
 import org.apache.log4j.Logger;
+import org.redoubt.api.configuration.IServerConfigurationManager;
 import org.redoubt.api.protocol.IProtocol;
 import org.redoubt.api.protocol.IProtocolManager;
 import org.redoubt.api.protocol.IProtocolSettings;
 import org.redoubt.api.transport.ITransport;
 import org.redoubt.api.transport.ITransportSettings;
+import org.redoubt.application.configuration.XmlConfigurationManager;
 import org.redoubt.protocol.ProtocolException;
 import org.redoubt.protocol.XmlProtocolManager;
 import org.redoubt.protocol.as2.As2Protocol;
@@ -18,6 +20,7 @@ import org.redoubt.transport.http.HttpTransportSettings;
 public class Factory {
 	private static Factory sInstance;
 	private static IProtocolManager sProtocolManager;
+	private static IServerConfigurationManager sServerConfigurationManager;
 	private static final Object SINGLETON_LOCK = new Object();
 	
 	private static final Logger sLogger = Logger.getLogger(Factory.class);
@@ -46,6 +49,7 @@ public class Factory {
 					
 					if(FactoryConstants.PROTOCOL_MANAGER_XML.equals(type)) {
 						sProtocolManager = new XmlProtocolManager();
+						sProtocolManager.loadTransports();
 					}
 					
 					sLogger.info("ProtocolManager instance successfully initialized.");
@@ -55,6 +59,25 @@ public class Factory {
 		
 		return sProtocolManager;
 	}
+	
+	public IServerConfigurationManager getServerConfigurationManager(String type) {
+        if(sServerConfigurationManager == null) {
+            synchronized(SINGLETON_LOCK) {
+                if(sServerConfigurationManager == null) {
+                    sLogger.info("Initializing ServerConfigurationManager instance...");
+                    
+                    if(FactoryConstants.SERVER_CONFIGURATION_MANAGER_XML.equals(type)) {
+                        sServerConfigurationManager = new XmlConfigurationManager();
+                        sServerConfigurationManager.loadConfiguration();
+                    }
+                    
+                    sLogger.info("ServerConfigurationManager instance successfully initialized.");
+                }
+            }
+        }
+        
+        return sServerConfigurationManager;
+    }
 	
 	public ITransport buildTransport(SettingsHolder baseTransportSettings) 
 			throws ProtocolException, TransportException {

@@ -1,5 +1,5 @@
 <GlobalConfiguration>
-	<Property name="TransportWorkFolder" value="../working/transport" />
-	<Property name="ProtocolWorkFolder" value="../working/protocol" />
-	<Property name="ShutdownPort" value="9999" />
+	<ConfigurationOption name="TransportWorkFolder" value="../working/transport" />
+	<ConfigurationOption name="ProtocolWorkFolder" value="../working/protocol" />
+	<ConfigurationOption name="ShutdownPort" value="9999" />
 </GlobalConfiguration>

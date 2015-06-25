@@ -1,6 +1,7 @@
 package org.redoubt.application;
 
 import org.apache.log4j.Logger;
+import org.redoubt.api.configuration.IServerConfigurationManager;
 import org.redoubt.api.factory.Factory;
 import org.redoubt.api.factory.FactoryConstants;
 import org.redoubt.api.protocol.IProtocolManager;
@@ -14,9 +15,10 @@ public class Application {
 		
 		sLogger.info("Starting " + VersionInformation.APP_NAME + " [" + VersionInformation.APP_VERSION + "]...");
 		
+		IServerConfigurationManager configurationManager = Factory.getInstance().getServerConfigurationManager(FactoryConstants.SERVER_CONFIGURATION_MANAGER_XML);
+		
 		IProtocolManager protocolManager = Factory.getInstance().getProtocolManager(FactoryConstants.PROTOCOL_MANAGER_XML);
 		
-		protocolManager.loadTransports();
 		protocolManager.startTransports();
 		
 		sLogger.info("Done starting server.");

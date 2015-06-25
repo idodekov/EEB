@@ -11,6 +11,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.log4j.Logger;
 import org.redoubt.api.factory.Factory;
 import org.redoubt.api.transport.ITransport;
+import org.redoubt.application.configuration.ConfigurationConstants;
 import org.redoubt.transport.SettingsHolder;
 import org.redoubt.transport.TransportException;
 import org.w3c.dom.Document;
@@ -50,8 +51,8 @@ public class XmlProtocolManager extends BaseProtocolManager {
 	private List<SettingsHolder> loadTransportsFromFile() {
 		List<SettingsHolder> resultList = new ArrayList<SettingsHolder>();
 		try {
-			File fXmlFile = new File("conf/transports.xml");
-			sLogger.info("Loading transports from file transports.xml.");
+			File fXmlFile = new File(ConfigurationConstants.CONFIGURATION_FILE_TRANSPORTS);
+			sLogger.info("Loading transports from file [" + ConfigurationConstants.CONFIGURATION_FILE_TRANSPORTS + "].");
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 			Document doc = dBuilder.parse(fXmlFile);
@@ -128,9 +129,9 @@ public class XmlProtocolManager extends BaseProtocolManager {
 				resultList.add(transportSettings);
 			}
 			
-			sLogger.info("Successfully loaded transports from file transports.xml.");
+			sLogger.info("Successfully loaded transports from file [" + ConfigurationConstants.CONFIGURATION_FILE_TRANSPORTS + "].");
 		} catch(Exception e) {
-			sLogger.error("Error reading file transports.xml. " + e.getMessage(), e);
+			sLogger.error("Error reading file [" + ConfigurationConstants.CONFIGURATION_FILE_TRANSPORTS + "]. " + e.getMessage(), e);
 		}
 		
 		return resultList;
