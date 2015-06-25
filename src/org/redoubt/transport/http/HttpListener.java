@@ -22,4 +22,12 @@ public class HttpListener extends HttpServlet {
         response.setStatus(HttpServletResponse.SC_OK);
         response.getWriter().println("<h1>Hello from HelloServlet</h1>");
     }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        super.doPost(req, resp);
+    }
+	
+	
 }

@@ -10,9 +10,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
 import org.redoubt.api.factory.Factory;
-import org.redoubt.api.protocol.IProtocolManager;
 import org.redoubt.api.transport.ITransport;
-import org.redoubt.application.Application;
 import org.redoubt.transport.SettingsHolder;
 import org.redoubt.transport.TransportException;
 import org.w3c.dom.Document;
@@ -20,8 +18,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-public class XmlProtocolManager implements IProtocolManager {
-	private static final Logger sLogger = Logger.getLogger(Application.class);
+public class XmlProtocolManager extends BaseProtocolManager {
+	private static final Logger sLogger = Logger.getLogger(XmlProtocolManager.class);
 	
 	private static final String XML_ELEMENT_TRANSPORT = "Transport";
 	private static final String XML_ELEMENT_SETTING = "Setting";
@@ -29,36 +27,27 @@ public class XmlProtocolManager implements IProtocolManager {
 	private static final String XML_ATTRIBUTE_NAME = "name";
 	private static final String XML_ATTRIBUTE_TYPE = "type";
 	
-	private List<ITransport> transports;
-	
 	public XmlProtocolManager() {
-		transports = new ArrayList<ITransport>();
+		super();
 	}
 	
 	@Override
-	public void startTransports() {
-		List<SettingsHolder> settings = loadTransports();
-		Iterator<SettingsHolder> it = settings.iterator();
-		while(it.hasNext()) {
-			SettingsHolder currentSettings = it.next();
-			
-			try {
-				ITransport transport = Factory.getInstance().buildTransport(currentSettings);
-				transport.start();
-				transports.add(transport);
-			} catch (ProtocolException | TransportException e) {
-				sLogger.error("An error has occurred while starting transport. " + e.getMessage(), e);
-			}
-		}
-	}
-
-	@Override
-	public void stopTransports() {
-		// TODO Auto-generated method stub
-		
-	}
+    public void loadTransports() {
+	    List<SettingsHolder> settings = loadTransportsFromFile();
+        Iterator<SettingsHolder> it = settings.iterator();
+        while(it.hasNext()) {
+            SettingsHolder currentSettings = it.next();
+            
+            try {
+                ITransport transport = Factory.getInstance().buildTransport(currentSettings);
+                addTransport(transport);
+            } catch (ProtocolException | TransportException e) {
+                sLogger.error("An error has occurred while loading transport. " + e.getMessage(), e);
+            }
+        }
+    }
 	
-	private List<SettingsHolder> loadTransports() {
+	private List<SettingsHolder> loadTransportsFromFile() {
 		List<SettingsHolder> resultList = new ArrayList<SettingsHolder>();
 		try {
 			File fXmlFile = new File("conf/transports.xml");
@@ -146,4 +135,5 @@ public class XmlProtocolManager implements IProtocolManager {
 		
 		return resultList;
 	}
+
 }

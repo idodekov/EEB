@@ -1,0 +1,4 @@
+<GlobalConfiguration>
+	<Property name="TransportWorkFolder" value="../working/transport" />
+	<Property name="ProtocolWorkFolder" value="../working/transport" />
+</GlobalConfiguration>

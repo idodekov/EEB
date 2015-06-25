@@ -14,9 +14,10 @@ public class Application {
 		
 		sLogger.info("Starting " + VersionInformation.APP_NAME + " [" + VersionInformation.APP_VERSION + "]...");
 		
-		IProtocolManager transportManager = Factory.getInstance().getProtocolManager(FactoryConstants.PROTOCOL_MANAGER_XML);
+		IProtocolManager protocolManager = Factory.getInstance().getProtocolManager(FactoryConstants.PROTOCOL_MANAGER_XML);
 		
-		transportManager.startTransports();
+		protocolManager.loadTransports();
+		protocolManager.startTransports();
 		
 		sLogger.info("Done starting server.");
 		
