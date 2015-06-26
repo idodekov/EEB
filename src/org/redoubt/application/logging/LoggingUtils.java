@@ -10,4 +10,8 @@ public class LoggingUtils {
 		BasicConfigurator.configure();
 		sLogger.info("log4j system initialized.");
 	}
+	
+	public static void suppressLogging() {
+	    //TODO
+    }
 }

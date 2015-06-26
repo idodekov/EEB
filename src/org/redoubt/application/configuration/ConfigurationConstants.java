@@ -9,4 +9,6 @@ public class ConfigurationConstants {
     public static final String CONFIGURATION_OPTION_TRANSPORT_WORK_FOLDER = "TransportWorkFolder";
     public static final String CONFIGURATION_OPTION_PROTOCOL_WORK_FOLDER = "ProtocolWorkFolder";
     public static final String CONFIGURATION_OPTION_SHUTDOWN_PORT = "ShutdownPort";
+    
+    public static final String SHUTDOWN_COMMAND = "shutdown";
 }

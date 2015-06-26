@@ -21,13 +21,19 @@ public class Application {
 		
 		protocolManager.startTransports();
 		
+		ShutdownHook shutdownHook = new ShutdownHook(configurationManager.getShutDownPort());
+		shutdownHook.start();
+		
 		sLogger.info("Done starting server.");
 		
 		try {
-			Thread.currentThread().join();
+		    shutdownHook.join();
 		} catch (InterruptedException e) {
 			sLogger.error(e.getMessage(), e);
 		}
+		
+		protocolManager.stopTransports();
+		sLogger.info("All transports have been stopped. Server shutdown complete.");
 	}
 
 }
