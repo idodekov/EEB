@@ -1,5 +1,7 @@
 package org.redoubt.api.factory;
 
+import javax.servlet.http.HttpServlet;
+
 import org.apache.log4j.Logger;
 import org.redoubt.api.configuration.IServerConfigurationManager;
 import org.redoubt.api.protocol.IProtocol;
@@ -10,6 +12,7 @@ import org.redoubt.api.transport.ITransportSettings;
 import org.redoubt.application.configuration.XmlConfigurationManager;
 import org.redoubt.protocol.ProtocolException;
 import org.redoubt.protocol.XmlProtocolManager;
+import org.redoubt.protocol.as2.As2HttpListener;
 import org.redoubt.protocol.as2.As2Protocol;
 import org.redoubt.protocol.as2.As2ProtocolSettings;
 import org.redoubt.transport.SettingsHolder;
@@ -49,8 +52,9 @@ public class Factory {
 					
 					if(FactoryConstants.PROTOCOL_MANAGER_XML.equals(type)) {
 						sProtocolManager = new XmlProtocolManager();
-						sProtocolManager.loadTransports();
 					}
+					
+					sProtocolManager.loadTransports();
 					
 					sLogger.info("ProtocolManager instance successfully initialized.");
 				}
@@ -68,8 +72,9 @@ public class Factory {
                     
                     if(FactoryConstants.SERVER_CONFIGURATION_MANAGER_XML.equals(type)) {
                         sServerConfigurationManager = new XmlConfigurationManager();
-                        sServerConfigurationManager.loadConfiguration();
                     }
+                    
+                    sServerConfigurationManager.loadConfiguration();
                     
                     sLogger.info("ServerConfigurationManager instance successfully initialized.");
                 }
@@ -127,5 +132,16 @@ public class Factory {
 		}
 		
 		return null;
+	}
+	
+	public HttpServlet getHttpListener(HttpTransportSettings settings) {
+	    IProtocolSettings protocolSettings = (IProtocolSettings) settings.getProtocolSettings();
+	    String protocolName = protocolSettings.getProtocolName();
+	    
+	    if(As2ProtocolSettings.PROTOCOL_NAME.equals(protocolName)) {
+            return new As2HttpListener(settings);
+        }
+	    
+	    return null;
 	}
 }
