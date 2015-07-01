@@ -33,7 +33,7 @@ public class HttpTransport extends BaseTransport {
         
         server.setHandler(context);
         HttpServlet servlet = Factory.getInstance().getHttpListener(httpSettings);
-        context.addServlet(new ServletHolder(servlet), "/");
+        context.addServlet(new ServletHolder(servlet), "/*");
 	}
 
 	@Override

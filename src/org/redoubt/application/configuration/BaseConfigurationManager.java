@@ -35,8 +35,14 @@ public abstract class BaseConfigurationManager implements IServerConfigurationMa
 
     @Override
     public Path getBackupFolder() {
-        String protocolWorkFolder = getConfigurationOption(ConfigurationConstants.CONFIGURATION_OPTION_WORK_FOLDER);
-        return Paths.get(protocolWorkFolder);
+        String protocolBackupFolder = getConfigurationOption(ConfigurationConstants.CONFIGURATION_OPTION_BACKUP_FOLDER);
+        return Paths.get(protocolBackupFolder);
+    }
+    
+    @Override
+    public boolean doBackup() {
+        String doBackup = getConfigurationOption(ConfigurationConstants.CONFIGURATION_OPTION_DO_BACKUP);
+        return "true".equalsIgnoreCase(doBackup);
     }
 
     @Override

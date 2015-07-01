@@ -8,5 +8,6 @@ public interface IServerConfigurationManager {
     void setConfigurationOption(String name, String value);
     Path getWorkFolder();
     Path getBackupFolder();
+    boolean doBackup();
     int getShutDownPort();
 }

@@ -44,6 +44,10 @@ public class Factory {
 		return sInstance;
 	}
 	
+	public IProtocolManager getProtocolManager() {
+	    return getProtocolManager(FactoryConstants.PROTOCOL_MANAGER_XML);
+	}
+	
 	public IProtocolManager getProtocolManager(String type) {
 		if(sProtocolManager == null) {
 			synchronized(SINGLETON_LOCK) {
@@ -62,6 +66,10 @@ public class Factory {
 		}
 		
 		return sProtocolManager;
+	}
+	
+	public IServerConfigurationManager getServerConfigurationManager() {
+	    return getServerConfigurationManager(FactoryConstants.SERVER_CONFIGURATION_MANAGER_XML);
 	}
 	
 	public IServerConfigurationManager getServerConfigurationManager(String type) {

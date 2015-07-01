@@ -3,6 +3,10 @@ package org.redoubt.protocol.as2;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Enumeration;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -10,6 +14,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.redoubt.api.configuration.IServerConfigurationManager;
+import org.redoubt.api.factory.Factory;
+import org.redoubt.fs.util.FileSystemUtils;
 import org.redoubt.transport.http.HttpTransportSettings;
 
 public class As2HttpListener extends HttpServlet {
@@ -32,12 +39,19 @@ public class As2HttpListener extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(req.getInputStream()));
-        String line;
-        while((line = reader.readLine()) != null) {
-            sLogger.info(line);
+        IServerConfigurationManager configManager = Factory.getInstance().getServerConfigurationManager();
+        Path workFolder = configManager.getWorkFolder();
+        Path workFile = Paths.get(workFolder.toString(), FileSystemUtils.generateUniqueFileName());
+        try {
+            Files.copy(req.getInputStream(), workFile);
+            sLogger.debug("An AS2 request has been persisted in the following file: " + workFile.toString());
+        } catch(IOException e) {
+            sLogger.error("An error has occured while persisting AS2 request to file system. " + e.getMessage(), e);
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            return;
         }
-        reader.close();
+        
+        FileSystemUtils.backupFile(workFile);
         
         resp.setStatus(HttpServletResponse.SC_OK);
     }
