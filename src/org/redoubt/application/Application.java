@@ -22,6 +22,7 @@ public class Application {
 		protocolManager.startTransports();
 		
 		ShutdownHook shutdownHook = new ShutdownHook(configurationManager.getShutDownPort());
+		shutdownHook.setName("ShutdownHook");
 		shutdownHook.start();
 		
 		sLogger.info("Done starting server.");
