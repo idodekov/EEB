@@ -28,14 +28,14 @@ public abstract class BaseConfigurationManager implements IServerConfigurationMa
     }
 
     @Override
-    public Path getTransportWorkFolder() {
-        String transportWorkFolder = getConfigurationOption(ConfigurationConstants.CONFIGURATION_OPTION_TRANSPORT_WORK_FOLDER);
+    public Path getWorkFolder() {
+        String transportWorkFolder = getConfigurationOption(ConfigurationConstants.CONFIGURATION_OPTION_WORK_FOLDER);
         return Paths.get(transportWorkFolder);
     }
 
     @Override
-    public Path getProtocolWorkFolder() {
-        String protocolWorkFolder = getConfigurationOption(ConfigurationConstants.CONFIGURATION_OPTION_PROTOCOL_WORK_FOLDER);
+    public Path getBackupFolder() {
+        String protocolWorkFolder = getConfigurationOption(ConfigurationConstants.CONFIGURATION_OPTION_WORK_FOLDER);
         return Paths.get(protocolWorkFolder);
     }
 

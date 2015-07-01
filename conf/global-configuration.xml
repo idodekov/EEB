@@ -1,5 +1,5 @@
 <GlobalConfiguration>
-	<ConfigurationOption name="TransportWorkFolder" value="../working/transport" />
-	<ConfigurationOption name="ProtocolWorkFolder" value="../working/protocol" />
+	<ConfigurationOption name="WorkFolder" value="../work" />
+	<ConfigurationOption name="BackupFolder" value="../backup" />
 	<ConfigurationOption name="ShutdownPort" value="9999" />
 </GlobalConfiguration>

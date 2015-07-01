@@ -6,7 +6,7 @@ public interface IServerConfigurationManager {
     void loadConfiguration();
     String getConfigurationOption(String name);
     void setConfigurationOption(String name, String value);
-    Path getTransportWorkFolder();
-    Path getProtocolWorkFolder();
+    Path getWorkFolder();
+    Path getBackupFolder();
     int getShutDownPort();
 }

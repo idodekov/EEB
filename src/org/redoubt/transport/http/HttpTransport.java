@@ -29,6 +29,7 @@ public class HttpTransport extends BaseTransport {
         sLogger.debug("Context path is [" + contextPath + "].");
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.setContextPath(contextPath);
+        context.setErrorHandler(new CustomErrorHandler());
         
         server.setHandler(context);
         HttpServlet servlet = Factory.getInstance().getHttpListener(httpSettings);
