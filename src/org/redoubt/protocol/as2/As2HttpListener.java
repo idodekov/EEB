@@ -1,12 +1,9 @@
 package org.redoubt.protocol.as2;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Enumeration;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -28,13 +25,6 @@ public class As2HttpListener extends HttpServlet {
 		super();
 		this.settings = settings;
 	}
-
-	//@Override
-    //protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    //    response.setContentType("text/html");
-    //    response.setStatus(HttpServletResponse.SC_OK);
-    //    response.getWriter().println("<h1>Hello from HelloServlet</h1>");
-    //}
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
