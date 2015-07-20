@@ -66,6 +66,7 @@ public class FileSystemTransport extends BaseTransport {
             
             try {
                 pollingThread.stopPollingThread();
+                pollingThread.interrupt();
                 pollingThread.join(60000);
                 pollingThread = new FolderPollingThread(folder, pollingInterval);
                 setRunning(false);

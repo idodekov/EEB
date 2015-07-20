@@ -11,7 +11,6 @@ public class FolderPollingThread extends Thread {
     private Path folder;
     
     public FolderPollingThread(Path folder, int pollingInterval) {
-        Thread.currentThread().setName("FolderPollingThread-" + System.currentTimeMillis());
         this.isRunning = false;
         this.pollingInterval = pollingInterval;
         this.folder = folder;
@@ -19,6 +18,7 @@ public class FolderPollingThread extends Thread {
 
     @Override
     public void run() {
+        Thread.currentThread().setName("FolderPollingThread-" + System.currentTimeMillis());
         isRunning = true;
         while(isRunning) {
             sLogger.debug("Polling folder [" + folder + "]...");
@@ -27,7 +27,7 @@ public class FolderPollingThread extends Thread {
             try {
                 Thread.sleep(pollingInterval * 1000);
             } catch (InterruptedException e) {
-                sLogger.error("[" + Thread.currentThread().getName() + "] has been interrupted while sleeping. " + e.getMessage(), e);
+                sLogger.debug("[" + Thread.currentThread().getName() + "] has been interrupted while sleeping. " + e.getMessage(), e);
             }
         }
     }
