@@ -37,4 +37,16 @@ public class FileSystemUtils {
             return;
         }
     }
+    
+    public static boolean verifyFolderPermissions(Path folder) {
+        if(!Files.exists(folder)) {
+            return false;
+        }
+        
+        if(!Files.isDirectory(folder)) {
+            return false;
+        }
+        
+        return true;
+    }
 }

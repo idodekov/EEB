@@ -21,6 +21,9 @@ public class HttpTransport extends BaseTransport {
 		httpSettings = (HttpTransportSettings) settings;
 		setRunning(false);
 		
+		String transportName = httpSettings.getTransportName();
+        sLogger.debug("Initializing settings for transport [" + transportName + "].");
+		
 		int port = httpSettings.getPort();
         sLogger.debug("Port is [" + port + "].");
         server = new Server(port);
