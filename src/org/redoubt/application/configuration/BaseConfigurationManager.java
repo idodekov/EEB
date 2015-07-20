@@ -1,13 +1,17 @@
 package org.redoubt.application.configuration;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.redoubt.api.configuration.IServerConfigurationManager;
 
 public abstract class BaseConfigurationManager implements IServerConfigurationManager {
+    private static final Logger sLogger = Logger.getLogger(BaseConfigurationManager.class);
     private Map<String, String> serverConfiguration;
     
     public BaseConfigurationManager() {
@@ -30,13 +34,31 @@ public abstract class BaseConfigurationManager implements IServerConfigurationMa
     @Override
     public Path getWorkFolder() {
         String transportWorkFolder = getConfigurationOption(ConfigurationConstants.CONFIGURATION_OPTION_WORK_FOLDER);
-        return Paths.get(transportWorkFolder);
+        Path workFolder = Paths.get(transportWorkFolder);
+        if(!Files.exists(workFolder)) {
+            try {
+                Files.createDirectory(workFolder);
+            } catch (IOException e) {
+                sLogger.error("Error while  creating WORK folder. " + e.getMessage(), e);
+            }
+        }
+        return workFolder;
     }
 
     @Override
     public Path getBackupFolder() {
         String protocolBackupFolder = getConfigurationOption(ConfigurationConstants.CONFIGURATION_OPTION_BACKUP_FOLDER);
-        return Paths.get(protocolBackupFolder);
+        
+        Path backupFolder = Paths.get(protocolBackupFolder);
+        if(!Files.exists(backupFolder)) {
+            try {
+                Files.createDirectory(backupFolder);
+            } catch (IOException e) {
+                sLogger.error("Error while  creating BACKUP folder. " + e.getMessage(), e);
+            }
+        }
+        
+        return backupFolder;
     }
     
     @Override

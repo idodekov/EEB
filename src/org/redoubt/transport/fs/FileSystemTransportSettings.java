@@ -44,5 +44,4 @@ public class FileSystemTransportSettings extends SettingsHolder implements ITran
         public static final String FOLDER = "folder";
         public static final String POLLING_INTERVAL = "pollingInterval";
     }
-
 }

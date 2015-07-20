@@ -1,19 +1,31 @@
 package org.redoubt.transport.fs;
 
+import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 
 import org.apache.log4j.Logger;
+import org.redoubt.api.configuration.IServerConfigurationManager;
+import org.redoubt.api.factory.Factory;
+import org.redoubt.api.protocol.IProtocol;
+import org.redoubt.api.protocol.TransferContext;
+import org.redoubt.fs.util.FileSystemUtils;
+import org.redoubt.transport.TransportConstants;
 
 public class FolderPollingThread extends Thread {
     private static final Logger sLogger = Logger.getLogger(FolderPollingThread.class);
     private boolean isRunning;
-    private int pollingInterval;
-    private Path folder;
+    private FileSystemTransportSettings fsSettings;
+    private IProtocol protocol;
     
-    public FolderPollingThread(Path folder, int pollingInterval) {
+    public FolderPollingThread(FileSystemTransportSettings fsSettings, IProtocol protocol) {
         this.isRunning = false;
-        this.pollingInterval = pollingInterval;
-        this.folder = folder;
+        this.fsSettings = fsSettings;
+        this.protocol = protocol;
     }
 
     @Override
@@ -21,11 +33,44 @@ public class FolderPollingThread extends Thread {
         Thread.currentThread().setName("FolderPollingThread-" + System.currentTimeMillis());
         isRunning = true;
         while(isRunning) {
-            sLogger.debug("Polling folder [" + folder + "]...");
-            
+            sLogger.debug("Polling folder [" + fsSettings.getFolder() + "]...");
             
             try {
-                Thread.sleep(pollingInterval * 1000);
+                Files.walkFileTree(fsSettings.getFolder(), new SimpleFileVisitor<Path>() {
+
+                    @Override
+                    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                        if(dir.equals(fsSettings.getFolder())) {
+                            return FileVisitResult.CONTINUE;
+                        } else {
+                            return FileVisitResult.SKIP_SUBTREE;
+                        }
+                    }
+
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                        IServerConfigurationManager configManager = Factory.getInstance().getServerConfigurationManager();
+                        Path workingFile = Paths.get(configManager.getWorkFolder().toString(), FileSystemUtils.generateUniqueFileName());
+                        Files.move(file, workingFile);
+                        
+                        FileSystemUtils.backupFile(workingFile);
+                        
+                        TransferContext context = new TransferContext();
+                        context.put(TransportConstants.CONTEXT_FULL_TARGET, workingFile.toString());
+                        context.put(TransportConstants.CONTEXT_ORIGINAL_FILE_NAME, file.getFileName().toString());
+                        
+                        protocol.process(context);
+                        
+                        return FileVisitResult.CONTINUE;
+                    }
+
+                });
+            } catch (Exception e1) {
+                sLogger.error("Error while listing files  inside [" + fsSettings.getFolder() + "]. " + e1.getMessage(), e1);
+            }
+            
+            try {
+                Thread.sleep(fsSettings.getPollingInterval() * 1000);
             } catch (InterruptedException e) {
                 sLogger.debug("[" + Thread.currentThread().getName() + "] has been interrupted while sleeping. " + e.getMessage(), e);
             }

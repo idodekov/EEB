@@ -11,5 +11,18 @@ public class As2ProtocolSettings extends SettingsHolder implements IProtocolSett
 	public String getProtocolName() {
 		return PROTOCOL_NAME;
 	}
+	
+	@Override
+    public String getDirection() {
+        return (String) get(As2ProtocolSettingsKeyring.DIRECTION);
+    }
+    
+    public void setDirection(String direction) {
+        put(As2ProtocolSettingsKeyring.DIRECTION, direction);
+    }
+    
+    public class As2ProtocolSettingsKeyring {
+        public static final String DIRECTION = "direction";
+    }
 
 }

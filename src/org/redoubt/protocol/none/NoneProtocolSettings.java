@@ -11,4 +11,17 @@ public class NoneProtocolSettings extends SettingsHolder implements IProtocolSet
     public String getProtocolName() {
         return PROTOCOL_NAME;
     }
+
+    @Override
+    public String getDirection() {
+        return (String) get(NoneProtocolSettingsKeyring.DIRECTION);
+    }
+    
+    public void setDirection(String direction) {
+        put(NoneProtocolSettingsKeyring.DIRECTION, direction);
+    }
+    
+    public class NoneProtocolSettingsKeyring {
+        public static final String DIRECTION = "direction";
+    }
 }

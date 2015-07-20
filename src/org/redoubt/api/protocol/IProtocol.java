@@ -6,6 +6,7 @@ public interface IProtocol {
 	void init(IProtocolSettings settings) throws ProtocolException;
 	IProtocolSettings getSettings();
 	void setSettings(IProtocolSettings name);
-	void receive();
-	void send();
+	void process(TransferContext context);
+	void receive(TransferContext context);
+	void send(TransferContext context);
 }

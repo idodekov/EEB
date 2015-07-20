@@ -12,4 +12,7 @@ public class ConfigurationConstants {
     public static final String CONFIGURATION_OPTION_SHUTDOWN_PORT = "ShutdownPort";
     
     public static final String SHUTDOWN_COMMAND = "shutdown";
+    
+    public static final String DIRECTION_INBOUND = "inbound";
+    public static final String DIRECTION_OUTBOUND = "outbound";
 }
