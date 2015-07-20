@@ -12,5 +12,11 @@
 		<Setting name="secure">false</Setting>
 		<Setting name="contextPath">/as2</Setting>
 	</Transport>
+	<Transport type="file_system">
+		<Protocol type="none" />
+		<Setting name="folder">E:\work\___WORK</Setting>
+		<Setting name="name">FileSystem</Setting>
+		<Setting name="pollingInterval">60</Setting>
+	</Transport>
 </Transports>
 

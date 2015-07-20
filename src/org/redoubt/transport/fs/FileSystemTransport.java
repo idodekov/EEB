@@ -20,7 +20,7 @@ public class FileSystemTransport extends BaseTransport {
         fsSettings = (FileSystemTransportSettings) settings;
         setRunning(false);
 
-        String transportName = fsSettings.getTransportName();
+        String transportName = fsSettings.getName();
         sLogger.debug("Initializing settings for transport [" + transportName + "].");
         
         pollingInterval = fsSettings.getPollingInterval();
@@ -37,7 +37,7 @@ public class FileSystemTransport extends BaseTransport {
             throw new TransportException("Polling interval [" + pollingInterval + "] is not a valid number.");
         }
         
-        pollingThread = new FolderPollingThread(pollingInterval); 
+        pollingThread = new FolderPollingThread(folder, pollingInterval); 
     }
 
     @Override
@@ -67,7 +67,7 @@ public class FileSystemTransport extends BaseTransport {
             try {
                 pollingThread.stopPollingThread();
                 pollingThread.join(60000);
-                pollingThread = new FolderPollingThread(pollingInterval);
+                pollingThread = new FolderPollingThread(folder, pollingInterval);
                 setRunning(false);
                 sLogger.info("File System transport [" + fsSettings.getName() + "] is stopped.");
             } catch (Exception e) {

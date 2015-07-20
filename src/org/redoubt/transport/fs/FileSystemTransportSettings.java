@@ -1,6 +1,7 @@
 package org.redoubt.transport.fs;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.redoubt.api.transport.ITransportSettings;
 import org.redoubt.transport.SettingsHolder;
@@ -23,7 +24,7 @@ public class FileSystemTransportSettings extends SettingsHolder implements ITran
     }
     
     public Path getFolder() {
-        return (Path) get(FileSystemSettingsKeyring.FOLDER);
+        return Paths.get((String) get(FileSystemSettingsKeyring.FOLDER));
     }
     
     public void setFolder(Path folder) {
@@ -31,7 +32,7 @@ public class FileSystemTransportSettings extends SettingsHolder implements ITran
     }
     
     public int getPollingInterval() {
-        return (Integer) get(FileSystemSettingsKeyring.POLLING_INTERVAL);
+        return Integer.parseInt((String) get(FileSystemSettingsKeyring.POLLING_INTERVAL));
     }
     
     public void setPollingInterval(int pollingInterval) {
