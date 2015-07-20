@@ -15,8 +15,12 @@ import org.redoubt.protocol.XmlProtocolManager;
 import org.redoubt.protocol.as2.As2HttpListener;
 import org.redoubt.protocol.as2.As2Protocol;
 import org.redoubt.protocol.as2.As2ProtocolSettings;
+import org.redoubt.protocol.none.NoneProtocol;
+import org.redoubt.protocol.none.NoneProtocolSettings;
 import org.redoubt.transport.SettingsHolder;
 import org.redoubt.transport.TransportException;
+import org.redoubt.transport.fs.FileSystemTransport;
+import org.redoubt.transport.fs.FileSystemTransportSettings;
 import org.redoubt.transport.http.HttpTransport;
 import org.redoubt.transport.http.HttpTransportSettings;
 
@@ -112,6 +116,8 @@ public class Factory {
 	public ITransport getTransport(String transportName) {
 		if(HttpTransportSettings.TRANSPORT_NAME.equals(transportName)) {
 			return new HttpTransport();
+		} else if(FileSystemTransportSettings.TRANSPORT_NAME.equals(transportName)) {
+		    return new FileSystemTransport();
 		}
 		
 		return null;
@@ -120,7 +126,9 @@ public class Factory {
 	public IProtocol getProtocol(String protocolName) {
 		if(As2ProtocolSettings.PROTOCOL_NAME.equals(protocolName)) {
 			return new As2Protocol();
-		}
+		} else if(NoneProtocolSettings.PROTOCOL_NAME.equals(protocolName)) {
+            return new NoneProtocol();
+        }
 		
 		return null;
 	}
@@ -129,7 +137,9 @@ public class Factory {
 	public SettingsHolder getTransportSettings(String transportType) {
 		if(HttpTransportSettings.TRANSPORT_NAME.equals(transportType)) {
 			return new HttpTransportSettings();
-		}
+		} else if(FileSystemTransportSettings.TRANSPORT_NAME.equals(transportType)) {
+            return new FileSystemTransportSettings();
+        }
 		
 		return null;
 	}
@@ -137,7 +147,9 @@ public class Factory {
 	public SettingsHolder getProtocolSettings(String protocolType) {
 		if(As2ProtocolSettings.PROTOCOL_NAME.equals(protocolType)) {
 			return new As2ProtocolSettings();
-		}
+		} else if(NoneProtocolSettings.PROTOCOL_NAME.equals(protocolType)) {
+            return new NoneProtocolSettings();
+        }
 		
 		return null;
 	}
