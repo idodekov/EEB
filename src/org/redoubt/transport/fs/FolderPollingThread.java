@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import org.redoubt.api.protocol.IProtocol;
 import org.redoubt.api.protocol.TransferContext;
 import org.redoubt.fs.util.FileSystemUtils;
+import org.redoubt.protocol.ProtocolException;
 import org.redoubt.transport.TransportConstants;
 
 public class FolderPollingThread extends Thread {
@@ -57,10 +58,15 @@ public class FolderPollingThread extends Thread {
                         context.put(TransportConstants.CONTEXT_FULL_TARGET, workFile.toString());
                         context.put(TransportConstants.CONTEXT_ORIGINAL_FILE_NAME, file.getFileName().toString());
                         
-                        protocol.process(context);
-                        
-                        FileSystemUtils.backupFile(workFile);
-                        FileSystemUtils.removeWorkFile(workFile);
+                        try {
+                            protocol.process(context);
+                        } catch (ProtocolException e) {
+                            sLogger.error("An error has occured while processing file ["+ file.toString() + "]. " + e.getMessage(), e);
+                            throw new IOException(e.getMessage(), e);
+                        } finally {
+                            FileSystemUtils.backupFile(workFile);
+                            FileSystemUtils.removeWorkFile(workFile);
+                        }
                         
                         sLogger.info("File [" + file.toString() + "] has been sucesfully processed.");
                         

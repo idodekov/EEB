@@ -11,6 +11,8 @@
 	<classpathentry kind="lib" path="lib/jetty-security-9.3.0.v20150612.jar"/>
 	<classpathentry kind="lib" path="lib/bcmail-jdk15on-152.jar"/>
 	<classpathentry kind="lib" path="lib/bcprov-jdk15on-152.jar"/>
+	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-152.jar"/>
+	<classpathentry kind="lib" path="lib/javax.mail.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

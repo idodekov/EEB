@@ -30,7 +30,7 @@ public class FileSystemUtils {
         Path backupFolder = configManager.getBackupFolder();
         
         try {
-            Path backupFile = Paths.get(backupFolder.toString(), file.getFileName().toString());
+            Path backupFile = Paths.get(backupFolder.toString(), generateUniqueFileName());
             Files.copy(file, backupFile);
             sLogger.info("The file [" + file.toString() + "] has been backed up as [" + backupFile.toString() + "].");
         } catch(Exception e) {

@@ -16,7 +16,7 @@ public abstract class BaseProtocol implements IProtocol {
     }
     
     @Override
-    public void process(TransferContext context) {
+    public void process(TransferContext context) throws ProtocolException {
         String direction = getSettings().getDirection();
         
         if(ConfigurationConstants.DIRECTION_INBOUND.equalsIgnoreCase(direction)) {
