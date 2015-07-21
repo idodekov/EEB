@@ -1,5 +1,6 @@
 package org.redoubt.fs.util;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -35,6 +36,22 @@ public class FileSystemUtils {
         } catch(Exception e) {
             sLogger.error("An error has occured while backing up file [" + file.toString() + "]. " + e.getMessage(), e);
             return;
+        }
+    }
+    
+    public static Path createWorkFile() {
+        IServerConfigurationManager configManager = Factory.getInstance().getServerConfigurationManager();
+        Path workFolder = configManager.getWorkFolder();
+        Path workFile = Paths.get(workFolder.toString(), FileSystemUtils.generateUniqueFileName());
+        return workFile;
+    }
+    
+    public static void removeWorkFile(Path file) {
+        try {
+            Files.delete(file);
+            sLogger.error("Work file [" + file.toString() + "] has been succesfully deleted.");
+        } catch (IOException e) {
+            sLogger.error("Error while removing work file [" + file.toString() + "]. " + e.getMessage(), e);
         }
     }
     

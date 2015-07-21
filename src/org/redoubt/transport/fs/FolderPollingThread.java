@@ -4,13 +4,10 @@ import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
 import org.apache.log4j.Logger;
-import org.redoubt.api.configuration.IServerConfigurationManager;
-import org.redoubt.api.factory.Factory;
 import org.redoubt.api.protocol.IProtocol;
 import org.redoubt.api.protocol.TransferContext;
 import org.redoubt.fs.util.FileSystemUtils;
@@ -50,18 +47,19 @@ public class FolderPollingThread extends Thread {
                     @Override
                     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                         sLogger.debug("File [" + file.toString() + "] will be consumed.");
-                        IServerConfigurationManager configManager = Factory.getInstance().getServerConfigurationManager();
-                        Path workingFile = Paths.get(configManager.getWorkFolder().toString(), FileSystemUtils.generateUniqueFileName());
-                        sLogger.debug("Moving file [" + file.toString() + "] to [" + workingFile.toString() + "] for processing.");
-                        Files.move(file, workingFile);
+                        Path workFile = FileSystemUtils.createWorkFile(); 
+                        sLogger.debug("Moving file [" + file.toString() + "] to [" + workFile.toString() + "] for processing.");
+                        Files.move(file, workFile);
                         
-                        FileSystemUtils.backupFile(workingFile);
+                        FileSystemUtils.backupFile(workFile);
                         
                         TransferContext context = new TransferContext();
-                        context.put(TransportConstants.CONTEXT_FULL_TARGET, workingFile.toString());
+                        context.put(TransportConstants.CONTEXT_FULL_TARGET, workFile.toString());
                         context.put(TransportConstants.CONTEXT_ORIGINAL_FILE_NAME, file.getFileName().toString());
                         
                         protocol.process(context);
+                        
+                        FileSystemUtils.removeWorkFile(workFile);
                         
                         sLogger.info("File [" + file.toString() + "] has been sucesfully processed.");
                         

@@ -3,7 +3,6 @@ package org.redoubt.protocol.as2;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -11,8 +10,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.redoubt.api.configuration.IServerConfigurationManager;
-import org.redoubt.api.factory.Factory;
 import org.redoubt.api.protocol.IProtocol;
 import org.redoubt.api.protocol.TransferContext;
 import org.redoubt.fs.util.FileSystemUtils;
@@ -34,9 +31,7 @@ public class As2HttpListener extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        IServerConfigurationManager configManager = Factory.getInstance().getServerConfigurationManager();
-        Path workFolder = configManager.getWorkFolder();
-        Path workFile = Paths.get(workFolder.toString(), FileSystemUtils.generateUniqueFileName());
+        Path workFile = FileSystemUtils.createWorkFile();
         try {
             Files.copy(req.getInputStream(), workFile);
             sLogger.debug("An AS2 request has been persisted in the following file: " + workFile.toString());
@@ -50,7 +45,10 @@ public class As2HttpListener extends HttpServlet {
         
         TransferContext context = new TransferContext();
         context.put(TransportConstants.CONTEXT_FULL_TARGET, workFile.toString());
+        
         protocol.process(context);
+        
+        FileSystemUtils.removeWorkFile(workFile);
         
         resp.setStatus(HttpServletResponse.SC_OK);
     }
