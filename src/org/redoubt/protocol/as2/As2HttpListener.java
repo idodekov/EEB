@@ -48,6 +48,7 @@ public class As2HttpListener extends HttpServlet {
         
         protocol.process(context);
         
+        FileSystemUtils.backupFile(workFile);
         FileSystemUtils.removeWorkFile(workFile);
         
         resp.setStatus(HttpServletResponse.SC_OK);

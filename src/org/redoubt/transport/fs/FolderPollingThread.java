@@ -59,6 +59,7 @@ public class FolderPollingThread extends Thread {
                         
                         protocol.process(context);
                         
+                        FileSystemUtils.backupFile(workFile);
                         FileSystemUtils.removeWorkFile(workFile);
                         
                         sLogger.info("File [" + file.toString() + "] has been sucesfully processed.");
