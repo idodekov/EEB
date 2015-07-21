@@ -49,8 +49,10 @@ public class FolderPollingThread extends Thread {
 
                     @Override
                     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                        sLogger.debug("File [" + file.toString() + "] will be consumed.");
                         IServerConfigurationManager configManager = Factory.getInstance().getServerConfigurationManager();
                         Path workingFile = Paths.get(configManager.getWorkFolder().toString(), FileSystemUtils.generateUniqueFileName());
+                        sLogger.debug("Moving file [" + file.toString() + "] to [" + workingFile.toString() + "] for processing.");
                         Files.move(file, workingFile);
                         
                         FileSystemUtils.backupFile(workingFile);
@@ -60,6 +62,8 @@ public class FolderPollingThread extends Thread {
                         context.put(TransportConstants.CONTEXT_ORIGINAL_FILE_NAME, file.getFileName().toString());
                         
                         protocol.process(context);
+                        
+                        sLogger.info("File [" + file.toString() + "] has been sucesfully processed.");
                         
                         return FileVisitResult.CONTINUE;
                     }
