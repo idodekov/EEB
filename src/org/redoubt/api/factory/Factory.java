@@ -154,12 +154,12 @@ public class Factory {
 		return null;
 	}
 	
-	public HttpServlet getHttpListener(HttpTransportSettings settings) {
+	public HttpServlet getHttpListener(HttpTransportSettings settings, IProtocol protocol) {
 	    IProtocolSettings protocolSettings = (IProtocolSettings) settings.getProtocolSettings();
 	    String protocolName = protocolSettings.getProtocolName();
 	    
 	    if(As2ProtocolSettings.PROTOCOL_NAME.equals(protocolName)) {
-            return new As2HttpListener(settings);
+            return new As2HttpListener(settings, protocol);
         }
 	    
 	    return null;

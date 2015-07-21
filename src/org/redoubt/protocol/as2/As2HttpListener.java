@@ -13,17 +13,22 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.redoubt.api.configuration.IServerConfigurationManager;
 import org.redoubt.api.factory.Factory;
+import org.redoubt.api.protocol.IProtocol;
+import org.redoubt.api.protocol.TransferContext;
 import org.redoubt.fs.util.FileSystemUtils;
+import org.redoubt.transport.TransportConstants;
 import org.redoubt.transport.http.HttpTransportSettings;
 
 public class As2HttpListener extends HttpServlet {
     private static final Logger sLogger = Logger.getLogger(As2HttpListener.class);
 	private static final long serialVersionUID = -9086455152129582063L;
 	private HttpTransportSettings settings;
+	private IProtocol protocol;
 	
-	public As2HttpListener(HttpTransportSettings settings) {
+	public As2HttpListener(HttpTransportSettings settings, IProtocol protocol) {
 		super();
 		this.settings = settings;
+		this.protocol = protocol;
 	}
 
     @Override
@@ -42,6 +47,10 @@ public class As2HttpListener extends HttpServlet {
         }
         
         FileSystemUtils.backupFile(workFile);
+        
+        TransferContext context = new TransferContext();
+        context.put(TransportConstants.CONTEXT_FULL_TARGET, workFile.toString());
+        protocol.process(context);
         
         resp.setStatus(HttpServletResponse.SC_OK);
     }

@@ -35,7 +35,7 @@ public class HttpTransport extends BaseTransport {
         context.setErrorHandler(new CustomErrorHandler());
         
         server.setHandler(context);
-        HttpServlet servlet = Factory.getInstance().getHttpListener(httpSettings);
+        HttpServlet servlet = Factory.getInstance().getHttpListener(httpSettings, getProtocol());
         context.addServlet(new ServletHolder(servlet), "/*");
 	}
 
