@@ -21,8 +21,26 @@ public class As2ProtocolSettings extends SettingsHolder implements IProtocolSett
         put(As2ProtocolSettingsKeyring.DIRECTION, direction);
     }
     
+    public String getFrom() {
+        return (String) get(As2ProtocolSettingsKeyring.FROM);
+    }
+    
+    public void setFrom(String from) {
+        put(As2ProtocolSettingsKeyring.FROM, from);
+    }
+    
+    public String getTo() {
+        return (String) get(As2ProtocolSettingsKeyring.TO);
+    }
+    
+    public void setTo(String to) {
+        put(As2ProtocolSettingsKeyring.TO, to);
+    }
+    
     public class As2ProtocolSettingsKeyring {
         public static final String DIRECTION = "direction";
+        public static final String FROM = "from";
+        public static final String TO = "to";
     }
 
 }

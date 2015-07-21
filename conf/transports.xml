@@ -3,10 +3,8 @@
 	<Transport type="http">
 		<Protocol type="as2">
 			<Setting name="direction">inbound</Setting>
-			<Setting name="test">123</Setting>
-			<Setting name="test1">123</Setting>
-			<Setting name="test2">123</Setting>
-			<Setting name="test3">123</Setting>
+			<Setting name="from">beta</Setting>
+			<Setting name="to">alpha</Setting>
 		</Protocol>
 		<Setting name="name">AS2 HTTP server</Setting>
 		<Setting name="port">4080</Setting>
@@ -14,8 +12,10 @@
 		<Setting name="contextPath">/as2</Setting>
 	</Transport>
 	<Transport type="file_system">
-		<Protocol type="none">
+		<Protocol type="as2">
 			<Setting name="direction">outbound</Setting>
+			<Setting name="from">alpha</Setting>
+			<Setting name="to">beta</Setting>
 		</Protocol>
 		<Setting name="folder">E:\work\___WORK</Setting>
 		<Setting name="name">FileSystem</Setting>

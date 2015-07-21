@@ -33,6 +33,7 @@ public class As2Protocol extends BaseProtocol {
 
     @Override
     public void send(TransferContext context) throws ProtocolException {
+        As2ProtocolSettings settings = (As2ProtocolSettings) getSettings();
         try {
             SMIMECompressedGenerator  gen = new SMIMECompressedGenerator();
               
@@ -48,8 +49,8 @@ public class As2Protocol extends BaseProtocol {
             Properties props = System.getProperties();
             Session session = Session.getDefaultInstance(props, null);
     
-            Address fromUser = new InternetAddress("\"Eric H. Echidna\"<eric@bouncycastle.org>");
-            Address toUser = new InternetAddress("example@bouncycastle.org");
+            Address fromUser = new InternetAddress(settings.getFrom());
+            Address toUser = new InternetAddress(settings.getTo());
     
             MimeMessage body = new MimeMessage(session);
             body.setFrom(fromUser);
@@ -57,7 +58,6 @@ public class As2Protocol extends BaseProtocol {
             body.setSubject("example compressed message");
             body.setContent(mp.getContent(), mp.getContentType());
             body.saveChanges();
-    
             body.writeTo(new FileOutputStream("E:\\git\\Redoubt\\test.file"));
         }  catch (Exception e) {
             sLogger.error("An error has occured while packaging As2 message. " + e.getMessage(), e);
