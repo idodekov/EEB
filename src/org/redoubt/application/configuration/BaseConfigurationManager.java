@@ -54,7 +54,7 @@ public abstract class BaseConfigurationManager implements IServerConfigurationMa
             try {
                 Files.createDirectory(backupFolder);
             } catch (IOException e) {
-                sLogger.error("Error while  creating BACKUP folder. " + e.getMessage(), e);
+                sLogger.error("Error while creating BACKUP folder. " + e.getMessage(), e);
             }
         }
         
@@ -70,6 +70,17 @@ public abstract class BaseConfigurationManager implements IServerConfigurationMa
     @Override
     public int getShutDownPort() {
         return Integer.parseInt(getConfigurationOption(ConfigurationConstants.CONFIGURATION_OPTION_SHUTDOWN_PORT));
+    }
+    
+    @Override
+    public Path getKeystoreFile() {
+        String keystoreFile = getConfigurationOption(ConfigurationConstants.CONFIGURATION_OPTION_KEYSTORE_FILE);
+        return Paths.get(keystoreFile);
+    }
+    
+    @Override
+    public String getKeystorePassword() {
+        return getConfigurationOption(ConfigurationConstants.CONFIGURATION_OPTION_KEYSTORE_PASSWORD);
     }
 
 }

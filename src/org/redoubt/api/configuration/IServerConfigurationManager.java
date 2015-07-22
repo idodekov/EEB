@@ -10,4 +10,6 @@ public interface IServerConfigurationManager {
     Path getBackupFolder();
     boolean doBackup();
     int getShutDownPort();
+    Path getKeystoreFile();
+    String getKeystorePassword();
 }

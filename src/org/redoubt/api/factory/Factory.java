@@ -3,6 +3,7 @@ package org.redoubt.api.factory;
 import javax.servlet.http.HttpServlet;
 
 import org.apache.log4j.Logger;
+import org.redoubt.api.configuration.ICertificateManager;
 import org.redoubt.api.configuration.IServerConfigurationManager;
 import org.redoubt.api.protocol.IProtocol;
 import org.redoubt.api.protocol.IProtocolManager;
@@ -10,6 +11,7 @@ import org.redoubt.api.protocol.IProtocolSettings;
 import org.redoubt.api.transport.ITransport;
 import org.redoubt.api.transport.ITransportSettings;
 import org.redoubt.application.configuration.XmlConfigurationManager;
+import org.redoubt.cert.JksCertificateManager;
 import org.redoubt.protocol.ProtocolException;
 import org.redoubt.protocol.XmlProtocolManager;
 import org.redoubt.protocol.as2.As2HttpListener;
@@ -28,6 +30,7 @@ public class Factory {
 	private static Factory sInstance;
 	private static IProtocolManager sProtocolManager;
 	private static IServerConfigurationManager sServerConfigurationManager;
+	private static ICertificateManager sCertificateManager;
 	private static final Object SINGLETON_LOCK = new Object();
 	
 	private static final Logger sLogger = Logger.getLogger(Factory.class);
@@ -48,6 +51,30 @@ public class Factory {
 		return sInstance;
 	}
 	
+	public ICertificateManager getCertificateManager() {
+        return getCertificateManager(FactoryConstants.CERTIFICATE_MANAGER_JKS);
+    }
+	
+	public ICertificateManager getCertificateManager(String type) {
+	    if(sCertificateManager == null) {
+            synchronized(SINGLETON_LOCK) {
+                if(sCertificateManager == null) {
+                    sLogger.info("Initializing CertificateManager instance...");
+                    
+                    if(FactoryConstants.CERTIFICATE_MANAGER_JKS.equals(type)) {
+                        sCertificateManager = new JksCertificateManager();
+                    }
+                    
+                    sCertificateManager.init();
+                    
+                    sLogger.info("CertificateManager instance successfully initialized. Type is [" + type + "].");
+                }
+            }
+	    }
+	    
+	    return sCertificateManager;
+    }
+	
 	public IProtocolManager getProtocolManager() {
 	    return getProtocolManager(FactoryConstants.PROTOCOL_MANAGER_XML);
 	}
@@ -64,7 +91,7 @@ public class Factory {
 					
 					sProtocolManager.loadTransports();
 					
-					sLogger.info("ProtocolManager instance successfully initialized.");
+					sLogger.info("ProtocolManager instance successfully initialized. Type is [" + type + "].");
 				}
 			}
 		}
@@ -88,7 +115,7 @@ public class Factory {
                     
                     sServerConfigurationManager.loadConfiguration();
                     
-                    sLogger.info("ServerConfigurationManager instance successfully initialized.");
+                    sLogger.info("ServerConfigurationManager instance successfully initialized. Type is [" + type + "].");
                 }
             }
         }

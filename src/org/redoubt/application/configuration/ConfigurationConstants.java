@@ -10,6 +10,8 @@ public class ConfigurationConstants {
     public static final String CONFIGURATION_OPTION_BACKUP_FOLDER = "BackupFolder";
     public static final String CONFIGURATION_OPTION_DO_BACKUP = "DoBackup";
     public static final String CONFIGURATION_OPTION_SHUTDOWN_PORT = "ShutdownPort";
+    public static final String CONFIGURATION_OPTION_KEYSTORE_FILE = "KeystoreFile";
+    public static final String CONFIGURATION_OPTION_KEYSTORE_PASSWORD = "KeystorePassword";
     
     public static final String SHUTDOWN_COMMAND = "shutdown";
     
