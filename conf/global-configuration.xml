@@ -4,5 +4,6 @@
 	<ConfigurationOption name="BackupFolder" 		value="backup" />
 	<ConfigurationOption name="ShutdownPort" 		value="9999" />
 	<ConfigurationOption name="KeystoreFile" 		value="conf/keystore.jks" />
+	<ConfigurationOption name="TruststoreFile" 		value="conf/truststore.jks" />
 	<ConfigurationOption name="KeystorePassword" 	value="redoubt" />
 </GlobalConfiguration>
