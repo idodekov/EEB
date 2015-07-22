@@ -23,6 +23,9 @@ public class Application {
 		
 		IServerConfigurationManager configurationManager = Factory.getInstance().getServerConfigurationManager();
 		
+		//TODO: Remove
+		Factory.getInstance().getCertificateManager();
+		
 		IProtocolManager protocolManager = Factory.getInstance().getProtocolManager();
 		
 		protocolManager.startTransports();

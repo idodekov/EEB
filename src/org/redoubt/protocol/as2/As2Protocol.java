@@ -55,7 +55,7 @@ public class As2Protocol extends BaseProtocol {
             MimeMessage body = new MimeMessage(session);
             body.setFrom(fromUser);
             body.setRecipient(Message.RecipientType.TO, toUser);
-            body.setSubject("example compressed message");
+//            body.setSubject("example compressed message");
             body.setContent(mp.getContent(), mp.getContentType());
             body.saveChanges();
             body.writeTo(new FileOutputStream("E:\\git\\Redoubt\\test.file"));
