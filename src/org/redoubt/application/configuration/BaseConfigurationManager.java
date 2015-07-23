@@ -82,5 +82,16 @@ public abstract class BaseConfigurationManager implements IServerConfigurationMa
     public String getKeystorePassword() {
         return getConfigurationOption(ConfigurationConstants.CONFIGURATION_OPTION_KEYSTORE_PASSWORD);
     }
+    
+    @Override
+    public Path getTruststoreFile() {
+        String keystoreFile = getConfigurationOption(ConfigurationConstants.CONFIGURATION_OPTION_TRUSTSTORE_FILE);
+        return Paths.get(keystoreFile);
+    }
+    
+    @Override
+    public String getTruststorePassword() {
+        return getConfigurationOption(ConfigurationConstants.CONFIGURATION_OPTION_TRUSTSTORE_PASSWORD);
+    }
 
 }

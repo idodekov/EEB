@@ -12,4 +12,6 @@ public interface IServerConfigurationManager {
     int getShutDownPort();
     Path getKeystoreFile();
     String getKeystorePassword();
+    Path getTruststoreFile();
+    String getTruststorePassword();
 }

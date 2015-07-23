@@ -6,4 +6,5 @@
 	<ConfigurationOption name="KeystoreFile" 		value="conf/keystore.jks" />
 	<ConfigurationOption name="TruststoreFile" 		value="conf/truststore.jks" />
 	<ConfigurationOption name="KeystorePassword" 	value="redoubt" />
+	<ConfigurationOption name="TruststorePassword" 	value="redoubt" />
 </GlobalConfiguration>
