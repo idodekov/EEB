@@ -2,11 +2,22 @@ package org.redoubt.protocol.as2;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cms.jcajce.ZlibCompressor;
 import org.bouncycastle.mail.smime.SMIMECompressedGenerator;
@@ -58,7 +69,9 @@ public class As2Protocol extends BaseProtocol {
 //            body.setSubject("example compressed message");
             body.setContent(mp.getContent(), mp.getContentType());
             body.saveChanges();
-            body.writeTo(new FileOutputStream("E:\\git\\Redoubt\\test.file"));
+            //body.writeTo(new FileOutputStream("E:\\git\\Redoubt\\test.file"));
+            
+            HttpClientUtils.sendPostRequest(settings);
         }  catch (Exception e) {
             sLogger.error("An error has occured while packaging As2 message. " + e.getMessage(), e);
             throw new ProtocolException(e.getMessage(), e);

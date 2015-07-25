@@ -39,7 +39,7 @@ public abstract class BaseConfigurationManager implements IServerConfigurationMa
             try {
                 Files.createDirectory(workFolder);
             } catch (IOException e) {
-                sLogger.error("Error while  creating WORK folder. " + e.getMessage(), e);
+                sLogger.error("Error while creating WORK folder. " + e.getMessage(), e);
             }
         }
         return workFolder;

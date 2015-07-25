@@ -49,7 +49,7 @@ public class FileSystemUtils {
     public static void removeWorkFile(Path file) {
         try {
             Files.delete(file);
-            sLogger.error("Work file [" + file.toString() + "] has been succesfully deleted.");
+            sLogger.debug("Work file [" + file.toString() + "] has been succesfully deleted.");
         } catch (IOException e) {
             sLogger.error("Error while removing work file [" + file.toString() + "]. " + e.getMessage(), e);
         }
