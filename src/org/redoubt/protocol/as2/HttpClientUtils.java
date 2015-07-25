@@ -1,39 +1,46 @@
 package org.redoubt.protocol.as2;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.apache.log4j.Logger;
 
 public class HttpClientUtils {
+    private static final Logger sLogger = Logger.getLogger(HttpClientUtils.class);
+    
     public static void sendPostRequest(As2ProtocolSettings settings) throws Exception {
         CloseableHttpClient httpclient = null;
         
         try {
-            httpclient = HttpClients.createDefault();
-            HttpPost httpPost = new HttpPost(settings.getUrl());
+            CredentialsProvider credsProvider = null;
             
             if(settings.getUsername() != null && !settings.getUsername().trim().isEmpty()) {
-                List<NameValuePair> nvps = new ArrayList <NameValuePair>();
-                nvps.add(new BasicNameValuePair("username", settings.getUsername().trim()));
+                sLogger.debug("Client authentication has been enabled - setting username and password as HTTP Basic.");
+                credsProvider = new BasicCredentialsProvider();
+                credsProvider.setCredentials(
+                        new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT),
+                        new UsernamePasswordCredentials(settings.getUsername().trim(), settings.getPassword()));
                 
-                if(settings.getPassword() != null && !settings.getPassword().trim().isEmpty()) {
-                    nvps.add(new BasicNameValuePair("password", settings.getPassword().trim()));
-                }
-                
-                httpPost.setEntity(new UrlEncodedFormEntity(nvps));
             }
+            
+            if(credsProvider != null) {
+                httpclient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
+            } else {
+                httpclient = HttpClients.createDefault();
+            }
+            
+            HttpPost httpPost = new HttpPost(settings.getUrl());
             
             ResponseHandler<String> responseHandler = new ResponseHandler<String>() {
     
