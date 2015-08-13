@@ -61,6 +61,22 @@ public class As2ProtocolSettings extends SettingsHolder implements IProtocolSett
         put(As2ProtocolSettingsKeyring.PASSWORD, password);
     }
     
+    public boolean isEncryptionEnabled() {
+    	return Boolean.parseBoolean((String) get(As2ProtocolSettingsKeyring.ENCRYPT));
+    }
+    
+    public void setEncryptionEnabled(boolean encrypt) {
+    	put(As2ProtocolSettingsKeyring.ENCRYPT, Boolean.toString(encrypt));
+    }
+    
+    public boolean isSigningEnabled() {
+    	return Boolean.parseBoolean((String) get(As2ProtocolSettingsKeyring.SIGN));
+    }
+    
+    public void setSigningEnabled(boolean sign) {
+    	put(As2ProtocolSettingsKeyring.SIGN, Boolean.toString(sign));
+    }
+    
     public class As2ProtocolSettingsKeyring {
         public static final String DIRECTION = "direction";
         public static final String FROM = "from";
@@ -68,6 +84,8 @@ public class As2ProtocolSettings extends SettingsHolder implements IProtocolSett
         public static final String URL = "url";
         public static final String USERNAME = "username";
         public static final String PASSWORD = "password";
+        public static final String SIGN = "sign";
+        public static final String ENCRYPT = "encrypt";
     }
 
 }

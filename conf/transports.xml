@@ -19,8 +19,10 @@
 			<Setting name="url">http://localhost:4080/as2/</Setting>
 			<Setting name="username">idodekov</Setting>
 			<Setting name="password">SECRET123</Setting>
+			<Setting name="sign">true</Setting>
+			<Setting name="encrypt">true</Setting>
 		</Protocol>
-		<Setting name="folder">E:\work\___WORK</Setting>
+		<Setting name="folder">F:\WORK\___WORK</Setting>
 		<Setting name="name">FileSystem</Setting>
 		<Setting name="pollingInterval">10</Setting>
 	</Transport>
