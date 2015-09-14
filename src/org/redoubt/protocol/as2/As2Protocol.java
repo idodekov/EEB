@@ -1,34 +1,18 @@
 package org.redoubt.protocol.as2;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cms.jcajce.ZlibCompressor;
 import org.bouncycastle.mail.smime.SMIMECompressedGenerator;
-import org.openas2.cert.CertificateFactory;
-import org.openas2.message.DataHistoryItem;
-import org.openas2.partner.Partnership;
-import org.openas2.partner.SecurePartnership;
-import org.openas2.util.AS2UtilOld;
 import org.redoubt.api.configuration.ICertificateManager;
+import org.redoubt.api.configuration.ICryptoHelper;
 import org.redoubt.api.factory.Factory;
 import org.redoubt.api.protocol.TransferContext;
 import org.redoubt.protocol.BaseProtocol;
@@ -97,6 +81,7 @@ public class As2Protocol extends BaseProtocol {
         // Encrypt and/or sign the data if requested
         if (encrypt || sign) {
         	ICertificateManager certificateManager = Factory.getInstance().getCertificateManager();
+        	ICryptoHelper cryptoHelper = Factory.getInstance().getCryptoHelper();
 
             // Sign the data if requested
             if (sign) {
@@ -104,29 +89,18 @@ public class As2Protocol extends BaseProtocol {
                 PrivateKey senderKey = certificateManager.getPrivateKey(settings.getSignCertAlias(), settings.getSignCertKeyPassword().toCharArray());
                 String digest = settings.getSignDigestAlgorithm();
 
-                dataBP = AS2UtilOld.getCryptoHelper().sign(dataBP, signingCert, senderKey, digest);
-                
-                //Asynch MDN 2007-03-12
-                DataHistoryItem historyItem = new DataHistoryItem(dataBP.getContentType());
-                // *** add one more item to msg history
-                msg.getHistory().getItems().add(historyItem);
+                dataBP = cryptoHelper.sign(dataBP, signingCert, senderKey, digest);
 
-                sLogger.debug("signed data"+msg.getLoggingText());
+                //sLogger.debug("signed data" + msg.getLoggingText());
             }
 
             // Encrypt the data if requested
             if (encrypt) {
-                String algorithm = partnership.getAttribute(SecurePartnership.PA_ENCRYPT);
+                String algorithm = settings.getEncryptAlgorithm();
+                X509Certificate receiverCert = certificateManager.getX509Certificate(settings.getEncryptCertAlias());
+                dataBP = cryptoHelper.encrypt(dataBP, receiverCert, algorithm);
 
-                X509Certificate receiverCert = certFx.getCertificate(msg, Partnership.PTYPE_RECEIVER);
-                dataBP = AS2UtilOld.getCryptoHelper().encrypt(dataBP, receiverCert, algorithm);
-
-                //Asynch MDN 2007-03-12
-                DataHistoryItem historyItem = new DataHistoryItem(dataBP.getContentType());
-                // *** add one more item to msg history
-                msg.getHistory().getItems().add(historyItem);
-
-                sLogger.debug("encrypted data"+msg.getLoggingText());
+                //sLogger.debug("encrypted data" + msg.getLoggingText());
             }
         }
 

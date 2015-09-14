@@ -144,8 +144,6 @@ public class BCCryptoHelper implements ICryptoHelper {
 
         MimeBodyPart encData = gen.generate(part, encAlg, "BC");
 
-        System.gc();
-
         return encData;
     }
 
@@ -287,23 +285,4 @@ public class BCCryptoHelper implements ICryptoHelper {
         return bIn;
     }
 
-    public KeyStore getKeyStore() throws KeyStoreException, NoSuchProviderException {
-        return KeyStore.getInstance("PKCS12", "BC");
-    }
-
-    public KeyStore loadKeyStore(InputStream in, char[] password) throws Exception {
-        KeyStore ks = getKeyStore();
-        ks.load(in, password);
-        return ks;
-    }
-
-    public KeyStore loadKeyStore(String filename, char[] password) throws Exception {
-        FileInputStream fIn = new FileInputStream(filename);
-
-        try {
-            return loadKeyStore(fIn, password);
-        } finally {
-            fIn.close();
-        }
-    }
 }

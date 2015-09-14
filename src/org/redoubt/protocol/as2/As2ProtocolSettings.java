@@ -90,11 +90,11 @@ public class As2ProtocolSettings extends SettingsHolder implements IProtocolSett
         put(As2ProtocolSettingsKeyring.ENCRYPT_CERT_ALIAS, encryptCertAlias);
     }
     
-    public String getEncryptDigestAlgorithm() {
+    public String getEncryptAlgorithm() {
         return (String) get(As2ProtocolSettingsKeyring.ENCRYPT_ALGORITHM);
     }
     
-    public void setEncryptDigestAlgorithm(String alg) {
+    public void setEncryptAlgorithm(String alg) {
         put(As2ProtocolSettingsKeyring.ENCRYPT_ALGORITHM, alg);
     }
     

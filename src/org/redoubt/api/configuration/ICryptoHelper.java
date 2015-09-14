@@ -1,8 +1,6 @@
 package org.redoubt.api.configuration;
 
-import java.io.InputStream;
 import java.security.Key;
-import java.security.KeyStore;
 import java.security.cert.Certificate;
 
 import javax.mail.internet.MimeBodyPart;
@@ -16,12 +14,6 @@ public interface ICryptoHelper {
     static final String CRYPT_RC2 = "rc2";
 
     boolean isEncrypted(MimeBodyPart part) throws Exception;
-
-    KeyStore getKeyStore() throws Exception;
-
-    KeyStore loadKeyStore(InputStream in, char[] password) throws Exception;
-
-    KeyStore loadKeyStore(String filename, char[] password) throws Exception;
 
     boolean isSigned(MimeBodyPart part) throws Exception;
 
