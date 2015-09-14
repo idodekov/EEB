@@ -6,6 +6,19 @@ import org.redoubt.transport.SettingsHolder;
 public class As2ProtocolSettings extends SettingsHolder implements IProtocolSettings {
 	private static final long serialVersionUID = -3261720417924355073L;
 	public static final String PROTOCOL_NAME = "as2";
+	
+	public As2ProtocolSettings() {
+		//Set default values
+		put(As2ProtocolSettingsKeyring.USERNAME, "");
+		put(As2ProtocolSettingsKeyring.PASSWORD, "");
+		put(As2ProtocolSettingsKeyring.SIGN, Boolean.toString(false));
+		put(As2ProtocolSettingsKeyring.ENCRYPT, Boolean.toString(false));
+		put(As2ProtocolSettingsKeyring.SIGN_CERT_KEY_PASSWORD, "");
+		put(As2ProtocolSettingsKeyring.SIGN_CERT_ALIAS, "");
+		put(As2ProtocolSettingsKeyring.ENCRYPT_CERT_ALIAS, "");
+		put(As2ProtocolSettingsKeyring.SIGN_DIGEST_ALGORITHM, "sha1");
+		put(As2ProtocolSettingsKeyring.ENCRYPT_ALGORITHM, "3des");
+	}
 
 	@Override
 	public String getProtocolName() {
@@ -69,12 +82,52 @@ public class As2ProtocolSettings extends SettingsHolder implements IProtocolSett
     	put(As2ProtocolSettingsKeyring.ENCRYPT, Boolean.toString(encrypt));
     }
     
+    public String getEncryptCertAlias() {
+        return (String) get(As2ProtocolSettingsKeyring.ENCRYPT_CERT_ALIAS);
+    }
+    
+    public void setEncryptCertAlias(String encryptCertAlias) {
+        put(As2ProtocolSettingsKeyring.ENCRYPT_CERT_ALIAS, encryptCertAlias);
+    }
+    
+    public String getEncryptDigestAlgorithm() {
+        return (String) get(As2ProtocolSettingsKeyring.ENCRYPT_ALGORITHM);
+    }
+    
+    public void setEncryptDigestAlgorithm(String alg) {
+        put(As2ProtocolSettingsKeyring.ENCRYPT_ALGORITHM, alg);
+    }
+    
     public boolean isSigningEnabled() {
     	return Boolean.parseBoolean((String) get(As2ProtocolSettingsKeyring.SIGN));
     }
     
     public void setSigningEnabled(boolean sign) {
     	put(As2ProtocolSettingsKeyring.SIGN, Boolean.toString(sign));
+    }
+    
+    public String getSignCertAlias() {
+        return (String) get(As2ProtocolSettingsKeyring.SIGN_CERT_ALIAS);
+    }
+    
+    public void setSignCertAlias(String signCertAlias) {
+        put(As2ProtocolSettingsKeyring.SIGN_CERT_ALIAS, signCertAlias);
+    }
+    
+    public String getSignCertKeyPassword() {
+        return (String) get(As2ProtocolSettingsKeyring.SIGN_CERT_KEY_PASSWORD);
+    }
+    
+    public void setSignCertKeyPassword(String signCertKeyPassword) {
+        put(As2ProtocolSettingsKeyring.SIGN_CERT_KEY_PASSWORD, signCertKeyPassword);
+    }
+    
+    public String getSignDigestAlgorithm() {
+        return (String) get(As2ProtocolSettingsKeyring.SIGN_DIGEST_ALGORITHM);
+    }
+    
+    public void setSignDigestAlgorithm(String alg) {
+        put(As2ProtocolSettingsKeyring.SIGN_DIGEST_ALGORITHM, alg);
     }
     
     public class As2ProtocolSettingsKeyring {
@@ -85,7 +138,12 @@ public class As2ProtocolSettings extends SettingsHolder implements IProtocolSett
         public static final String USERNAME = "username";
         public static final String PASSWORD = "password";
         public static final String SIGN = "sign";
+        public static final String SIGN_CERT_ALIAS = "signCertAlias";
+        public static final String SIGN_CERT_KEY_PASSWORD = "signCertKeyPassword";
+        public static final String SIGN_DIGEST_ALGORITHM = "signDigestAlgorithm";
         public static final String ENCRYPT = "encrypt";
+        public static final String ENCRYPT_CERT_ALIAS = "encryptCertAlias";
+        public static final String ENCRYPT_ALGORITHM = "encryptAlgorithm";
     }
 
 }

@@ -8,7 +8,7 @@
 		</Protocol>
 		<Setting name="name">AS2 HTTP server</Setting>
 		<Setting name="port">4080</Setting>
-		<Setting name="secure">false</Setting>
+		<Setting name="tlsEnabled">false</Setting>
 		<Setting name="contextPath">/as2</Setting>
 	</Transport>
 	<Transport type="file_system">
@@ -20,7 +20,12 @@
 			<Setting name="username">idodekov</Setting>
 			<Setting name="password">SECRET123</Setting>
 			<Setting name="sign">true</Setting>
+			<Setting name="signCertAlias">signCert</Setting>
+			<Setting name="signCertKeyPassword">redoubt</Setting>
+			<Setting name="signDigestAlgorithm">sha1</Setting>
 			<Setting name="encrypt">true</Setting>
+			<Setting name="encryptCertAlias">encryptCert</Setting>
+			<Setting name="encryptAlgorithm">3des</Setting>
 		</Protocol>
 		<Setting name="folder">F:\WORK\___WORK</Setting>
 		<Setting name="name">FileSystem</Setting>

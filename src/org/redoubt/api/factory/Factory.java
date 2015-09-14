@@ -4,6 +4,7 @@ import javax.servlet.http.HttpServlet;
 
 import org.apache.log4j.Logger;
 import org.redoubt.api.configuration.ICertificateManager;
+import org.redoubt.api.configuration.ICryptoHelper;
 import org.redoubt.api.configuration.IServerConfigurationManager;
 import org.redoubt.api.protocol.IProtocol;
 import org.redoubt.api.protocol.IProtocolManager;
@@ -11,6 +12,7 @@ import org.redoubt.api.protocol.IProtocolSettings;
 import org.redoubt.api.transport.ITransport;
 import org.redoubt.api.transport.ITransportSettings;
 import org.redoubt.application.configuration.XmlConfigurationManager;
+import org.redoubt.cert.BCCryptoHelper;
 import org.redoubt.cert.JksCertificateManager;
 import org.redoubt.protocol.ProtocolException;
 import org.redoubt.protocol.XmlProtocolManager;
@@ -31,6 +33,7 @@ public class Factory {
 	private static IProtocolManager sProtocolManager;
 	private static IServerConfigurationManager sServerConfigurationManager;
 	private static ICertificateManager sCertificateManager;
+	private static ICryptoHelper sCryptoHelper;
 	private static final Object SINGLETON_LOCK = new Object();
 	
 	private static final Logger sLogger = Logger.getLogger(Factory.class);
@@ -49,6 +52,30 @@ public class Factory {
 		}
 		
 		return sInstance;
+	}
+	
+	public ICryptoHelper getCryptoHelper() {
+		return getCryptoHelper(FactoryConstants.CRYPTO_HELPER_BC);
+	}
+	
+	public ICryptoHelper getCryptoHelper(String type) {
+		if(sCryptoHelper == null) {
+            synchronized(SINGLETON_LOCK) {
+                if(sCryptoHelper == null) {
+                	sLogger.info("Initializing CryptoHelper instance...");
+                    
+                    if(FactoryConstants.CRYPTO_HELPER_BC.equals(type)) {
+                    	sCryptoHelper = new BCCryptoHelper();
+                    }
+                    
+                    sCryptoHelper.init();
+                    
+                    sLogger.info("CryptoHelper instance successfully initialized. Type is [" + type + "].");
+                }
+            }
+		}
+		
+		return sCryptoHelper;
 	}
 	
 	public ICertificateManager getCertificateManager() {

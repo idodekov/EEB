@@ -1,9 +1,6 @@
 package org.redoubt.application;
 
-import java.security.Security;
-
 import org.apache.log4j.Logger;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.redoubt.api.configuration.IServerConfigurationManager;
 import org.redoubt.api.factory.Factory;
 import org.redoubt.api.protocol.IProtocolManager;
@@ -17,14 +14,7 @@ public class Application {
 		
 		sLogger.info("Starting " + VersionInformation.APP_NAME + " [" + VersionInformation.APP_VERSION + "]...");
 		
-		sLogger.info("Adding BC security provider...");
-		Security.addProvider(new BouncyCastleProvider());
-		sLogger.info("BC security provider succesfully added.");
-		
 		IServerConfigurationManager configurationManager = Factory.getInstance().getServerConfigurationManager();
-		
-		//TODO: Remove
-		Factory.getInstance().getCertificateManager();
 		
 		IProtocolManager protocolManager = Factory.getInstance().getProtocolManager();
 		
