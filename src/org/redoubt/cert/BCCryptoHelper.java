@@ -18,7 +18,9 @@ import java.security.Security;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.activation.CommandMap;
 import javax.activation.MailcapCommandMap;
@@ -27,10 +29,20 @@ import javax.mail.internet.ContentType;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
 
+import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.cms.AttributeTable;
+import org.bouncycastle.asn1.cms.IssuerAndSerialNumber;
+import org.bouncycastle.asn1.smime.SMIMECapabilitiesAttribute;
+import org.bouncycastle.asn1.smime.SMIMECapability;
+import org.bouncycastle.asn1.smime.SMIMECapabilityVector;
+import org.bouncycastle.asn1.smime.SMIMEEncryptionKeyPreferenceAttribute;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.cert.jcajce.JcaCertStore;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.RecipientId;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.SignerInformation;
+import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoGeneratorBuilder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.mail.smime.SMIMEEnveloped;
 import org.bouncycastle.mail.smime.SMIMEEnvelopedGenerator;
@@ -38,6 +50,7 @@ import org.bouncycastle.mail.smime.SMIMEException;
 import org.bouncycastle.mail.smime.SMIMESigned;
 import org.bouncycastle.mail.smime.SMIMESignedGenerator;
 import org.bouncycastle.mail.smime.SMIMEUtil;
+import org.bouncycastle.util.Store;
 import org.bouncycastle.util.encoders.Base64;
 import org.redoubt.api.configuration.ICryptoHelper;
 
@@ -175,6 +188,37 @@ public class BCCryptoHelper implements ICryptoHelper {
         MimeBodyPart tmpBody = new MimeBodyPart();
         tmpBody.setContent(signedData);
         tmpBody.setHeader("Content-Type", signedData.getContentType());
+        
+        
+        
+        
+        
+        
+        //TODO
+        
+        List<X509Certificate> certList = new ArrayList<X509Certificate>();
+
+        certList.add(x509Cert);
+
+        Store certs = new JcaCertStore(certList);
+        
+        ASN1EncodableVector         signedAttrs = new ASN1EncodableVector();
+        SMIMECapabilityVector       caps = new SMIMECapabilityVector();
+
+        caps.addCapability(SMIMECapability.dES_EDE3_CBC);
+        caps.addCapability(SMIMECapability.rC2_CBC, 128);
+        caps.addCapability(SMIMECapability.dES_CBC);
+        
+        signedAttrs.add(new SMIMECapabilitiesAttribute(caps));
+        
+        IssuerAndSerialNumber issAndSer = new IssuerAndSerialNumber(new X500Name(x509Cert.getIssuerDN().getName()), x509Cert.getSerialNumber());
+        signedAttrs.add(new SMIMEEncryptionKeyPreferenceAttribute(issAndSer));
+        
+        SMIMESignedGenerator gen = new SMIMESignedGenerator();
+        gen.addSignerInfoGenerator(new JcaSimpleSignerInfoGeneratorBuilder().setProvider("BC").setSignedAttributeGenerator(new AttributeTable(signedAttrs)).build("SHA1withRSA", privKey, x509Cert));
+        gen.addCertificates(certs);
+        MimeMultipart mm = gen.generate(part);
+        
 
         return tmpBody;
     }
