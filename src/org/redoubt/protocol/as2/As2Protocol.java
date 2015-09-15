@@ -1,6 +1,11 @@
 package org.redoubt.protocol.as2;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.Properties;
@@ -31,8 +36,17 @@ public class As2Protocol extends BaseProtocol {
 
     @Override
     public void receive(TransferContext context) throws ProtocolException {
-        // TODO Auto-generated method stub
+        As2ProtocolSettings settings = (As2ProtocolSettings) getSettings();
         
+        Path productionFolder = settings.getProductionFolder();
+        String fullTarget = (String) context.get(TransportConstants.CONTEXT_FULL_TARGET);
+        Path destination = Paths.get(fullTarget);
+        
+        try {
+            Files.copy(destination, Paths.get(productionFolder.toString(), destination.getFileName().toString()));
+        } catch (IOException e) {
+            sLogger.error("An error has occured while copying destination file [" + destination.toString() + "].", e);
+        }
     }
 
     @Override
@@ -43,8 +57,8 @@ public class As2Protocol extends BaseProtocol {
               
             MimeBodyPart msg = new MimeBodyPart();
     
-            context.get(TransportConstants.CONTEXT_FULL_TARGET);
-            msg.setDataHandler(new DataHandler(new FileDataSource(new File((String) context.get(TransportConstants.CONTEXT_FULL_TARGET)))));
+            String fullTarget = (String) context.get(TransportConstants.CONTEXT_FULL_TARGET);
+            msg.setDataHandler(new DataHandler(new FileDataSource(new File(fullTarget))));
             msg.setHeader("Content-Type", "application/octet-stream");
             msg.setHeader("Content-Transfer-Encoding", "binary");
     
@@ -62,9 +76,10 @@ public class As2Protocol extends BaseProtocol {
 //            body.setSubject("example compressed message");
             body.setContent(mp.getContent(), mp.getContentType());
             body.saveChanges();
-            //body.writeTo(new FileOutputStream("E:\\git\\Redoubt\\test.file"));
+            File transformedFile = new File(fullTarget);
+            body.writeTo(new FileOutputStream(transformedFile));
             
-            HttpClientUtils.sendPostRequest(settings);
+            HttpClientUtils.sendPostRequest(settings, transformedFile);
         }  catch (Exception e) {
             sLogger.error("An error has occured while packaging As2 message. " + e.getMessage(), e);
             throw new ProtocolException(e.getMessage(), e);

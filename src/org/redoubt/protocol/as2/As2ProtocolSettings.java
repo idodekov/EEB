@@ -1,5 +1,8 @@
 package org.redoubt.protocol.as2;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import org.redoubt.api.protocol.IProtocolSettings;
 import org.redoubt.transport.SettingsHolder;
 
@@ -130,6 +133,14 @@ public class As2ProtocolSettings extends SettingsHolder implements IProtocolSett
         put(As2ProtocolSettingsKeyring.SIGN_DIGEST_ALGORITHM, alg);
     }
     
+    public Path getProductionFolder() {
+        return Paths.get((String) get(As2ProtocolSettingsKeyring.PRODUCTION_FOLDER));
+    }
+    
+    public void setProductionFolder(Path folder) {
+        put(As2ProtocolSettingsKeyring.PRODUCTION_FOLDER, folder);
+    }
+    
     public class As2ProtocolSettingsKeyring {
         public static final String DIRECTION = "direction";
         public static final String FROM = "from";
@@ -144,6 +155,7 @@ public class As2ProtocolSettings extends SettingsHolder implements IProtocolSett
         public static final String ENCRYPT = "encrypt";
         public static final String ENCRYPT_CERT_ALIAS = "encryptCertAlias";
         public static final String ENCRYPT_ALGORITHM = "encryptAlgorithm";
+        public static final String PRODUCTION_FOLDER = "productionFolder";
     }
 
 }
