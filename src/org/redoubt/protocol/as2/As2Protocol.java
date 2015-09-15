@@ -58,7 +58,9 @@ public class As2Protocol extends BaseProtocol {
             MimeBodyPart msg = new MimeBodyPart();
     
             String fullTarget = (String) context.get(TransportConstants.CONTEXT_FULL_TARGET);
-            msg.setDataHandler(new DataHandler(new FileDataSource(new File(fullTarget))));
+            File workFile = new File(fullTarget);
+            
+            msg.setDataHandler(new DataHandler(new FileDataSource(workFile)));
             msg.setHeader("Content-Type", "application/octet-stream");
             msg.setHeader("Content-Transfer-Encoding", "binary");
     
@@ -73,13 +75,12 @@ public class As2Protocol extends BaseProtocol {
             MimeMessage body = new MimeMessage(session);
             body.setFrom(fromUser);
             body.setRecipient(Message.RecipientType.TO, toUser);
-//            body.setSubject("example compressed message");
             body.setContent(mp.getContent(), mp.getContentType());
             body.saveChanges();
-            File transformedFile = new File(fullTarget);
-            body.writeTo(new FileOutputStream(transformedFile));
             
-            HttpClientUtils.sendPostRequest(settings, transformedFile);
+            body.writeTo(new FileOutputStream(workFile));
+            
+            HttpClientUtils.sendPostRequest(settings, workFile.toPath());
         }  catch (Exception e) {
             sLogger.error("An error has occured while packaging As2 message. " + e.getMessage(), e);
             throw new ProtocolException(e.getMessage(), e);
