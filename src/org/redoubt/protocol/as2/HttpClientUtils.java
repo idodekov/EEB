@@ -1,6 +1,5 @@
 package org.redoubt.protocol.as2;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,8 +13,6 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -27,6 +24,7 @@ public class HttpClientUtils {
     
     public static void sendPostRequest(As2ProtocolSettings settings, Path file) throws Exception {
         CloseableHttpClient httpclient = null;
+        HttpPost httpPost = null;
         
         try {
             CredentialsProvider credsProvider = null;
@@ -46,7 +44,7 @@ public class HttpClientUtils {
                 httpclient = HttpClients.createDefault();
             }
             
-            HttpPost httpPost = new HttpPost(settings.getUrl());
+            httpPost = new HttpPost(settings.getUrl());
             
 //            FileBody bin = new FileBody(file);
             ByteArrayEntity entity=new ByteArrayEntity(Files.readAllBytes(file));
@@ -73,6 +71,10 @@ public class HttpClientUtils {
             
             String response = httpclient.execute(httpPost, responseHandler);
         } finally {
+        	if(httpPost != null) {
+        		httpPost.releaseConnection();
+        	}
+        	
             if(httpclient != null) {
                 httpclient.close();
             }

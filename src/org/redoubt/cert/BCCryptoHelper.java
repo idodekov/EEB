@@ -30,6 +30,7 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
 
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.asn1.cms.IssuerAndSerialNumber;
 import org.bouncycastle.asn1.smime.SMIMECapabilitiesAttribute;
@@ -53,11 +54,13 @@ import org.bouncycastle.mail.smime.SMIMEException;
 import org.bouncycastle.mail.smime.SMIMESigned;
 import org.bouncycastle.mail.smime.SMIMESignedGenerator;
 import org.bouncycastle.mail.smime.SMIMEUtil;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.Store;
 import org.bouncycastle.util.encoders.Base64;
 import org.redoubt.api.configuration.ICryptoHelper;
 
 public class BCCryptoHelper implements ICryptoHelper {
+	
     public boolean isEncrypted(MimeBodyPart part) throws MessagingException {
         ContentType contentType = new ContentType(part.getContentType());
         String baseType = contentType.getBaseType().toLowerCase();
@@ -115,7 +118,7 @@ public class BCCryptoHelper implements ICryptoHelper {
         return micResult.toString();
     }
 
-    public MimeBodyPart decrypt(MimeBodyPart part, Certificate cert, Key key)
+    public MimeBodyPart decrypt(MimeBodyPart part, X509Certificate cert, PrivateKey key)
             throws GeneralSecurityException, MessagingException, CMSException, IOException,
             SMIMEException {
         // Make sure the data is encrypted
@@ -149,16 +152,26 @@ public class BCCryptoHelper implements ICryptoHelper {
     public void deinit() {
     }
 
-    public MimeBodyPart encrypt(MimeBodyPart part, Certificate cert, String algorithm)
+    public MimeBodyPart encrypt(MimeBodyPart part, X509Certificate cert, String algorithm)
             throws GeneralSecurityException, SMIMEException, CMSException {
         X509Certificate x509Cert = castCertificate(cert);
-
-        String encAlg = convertAlgorithm(algorithm, true);
+        
+        ASN1ObjectIdentifier encAlg = null;
+        
+        if(CRYPT_RC2.equals(algorithm)) {
+        	encAlg = CMSAlgorithm.RC2_CBC;
+        } else if(CRYPT_3DES.equals(algorithm)) {
+        	encAlg = CMSAlgorithm.DES_EDE3_CBC;
+        } else if(CRYPT_CAST5.equals(algorithm)) {
+        	encAlg = CMSAlgorithm.CAST5_CBC;
+        } else if(CRYPT_IDEA.equals(algorithm)) {
+        	encAlg = CMSAlgorithm.IDEA_CBC;
+        }
 
         SMIMEEnvelopedGenerator gen = new SMIMEEnvelopedGenerator();
         gen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(x509Cert).setProvider("BC"));
-        MimeBodyPart encData = gen.generate(part, new JceCMSContentEncryptorBuilder(CMSAlgorithm.RC2_CBC).setProvider("BC").build());
-
+        MimeBodyPart encData = gen.generate(part, new JceCMSContentEncryptorBuilder(encAlg).setProvider("BC").build());
+        
         return encData;
     }
 
@@ -174,22 +187,22 @@ public class BCCryptoHelper implements ICryptoHelper {
         CommandMap.setDefaultCommandMap(mc);
     }
 
-    public MimeBodyPart sign(MimeBodyPart part, Certificate cert, Key key, String digest)
-            throws GeneralSecurityException, SMIMEException, MessagingException {
-        String signDigest = convertAlgorithm(digest, true);
+    public MimeBodyPart sign(MimeBodyPart part, X509Certificate cert, PrivateKey key, String digest)
+            throws GeneralSecurityException, SMIMEException, MessagingException, OperatorCreationException {
+//        String signDigest = convertAlgorithm(digest, true);
         X509Certificate x509Cert = castCertificate(cert);
         PrivateKey privKey = castKey(key);
-
-        SMIMESignedGenerator sGen = new SMIMESignedGenerator();
-        sGen.addSigner(privKey, x509Cert, signDigest);
-
-        MimeMultipart signedData;
-
-        signedData = sGen.generate(part, "BC");
-
-        MimeBodyPart tmpBody = new MimeBodyPart();
-        tmpBody.setContent(signedData);
-        tmpBody.setHeader("Content-Type", signedData.getContentType());
+//
+//        SMIMESignedGenerator sGen = new SMIMESignedGenerator();
+//        sGen.addSigner(privKey, x509Cert, signDigest);
+//
+//        MimeMultipart signedData;
+//
+//        signedData = sGen.generate(part, "BC");
+//
+//        MimeBodyPart tmpBody = new MimeBodyPart();
+//        tmpBody.setContent(signedData);
+//        tmpBody.setHeader("Content-Type", signedData.getContentType());
         
         
         
@@ -221,11 +234,15 @@ public class BCCryptoHelper implements ICryptoHelper {
         gen.addCertificates(certs);
         MimeMultipart mm = gen.generate(part);
         
+        MimeBodyPart tempBody = new MimeBodyPart();
+        tempBody.setContent(mm);
+        tempBody.setHeader("Content-Type", mm.getContentType());
+        
 
-        return tmpBody;
+        return tempBody;
     }
 
-    public MimeBodyPart verify(MimeBodyPart part, Certificate cert)
+    public MimeBodyPart verify(MimeBodyPart part, X509Certificate cert)
             throws GeneralSecurityException, IOException, MessagingException, CMSException {
         // Make sure the data is signed
         if (!isSigned(part)) {
@@ -270,7 +287,7 @@ public class BCCryptoHelper implements ICryptoHelper {
 
         return (PrivateKey) key;
     }
-
+    
     protected String convertAlgorithm(String algorithm, boolean toBC)
             throws NoSuchAlgorithmException {
         if (algorithm == null) {

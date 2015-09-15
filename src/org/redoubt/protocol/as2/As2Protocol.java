@@ -20,6 +20,7 @@ import org.redoubt.api.configuration.ICertificateManager;
 import org.redoubt.api.configuration.ICryptoHelper;
 import org.redoubt.api.factory.Factory;
 import org.redoubt.api.protocol.TransferContext;
+import org.redoubt.fs.util.FileSystemUtils;
 import org.redoubt.protocol.BaseProtocol;
 import org.redoubt.protocol.ProtocolException;
 import org.redoubt.transport.TransportConstants;
@@ -80,9 +81,14 @@ public class As2Protocol extends BaseProtocol {
             body.setContent(msg.getContent(), msg.getContentType());
             body.saveChanges();
             
-            body.writeTo(new FileOutputStream(workFile));
+            Path tempStorage = FileSystemUtils.createWorkFile();
             
-            HttpClientUtils.sendPostRequest(settings, workFile.toPath());
+            FileOutputStream fos = new FileOutputStream(tempStorage.toFile());
+            body.writeTo(fos);
+            fos.close();
+            
+            HttpClientUtils.sendPostRequest(settings, tempStorage);
+            FileSystemUtils.moveFile(tempStorage, workFile.toPath(), true);
         }  catch (Exception e) {
             sLogger.error("An error has occured while packaging As2 message. " + e.getMessage(), e);
             throw new ProtocolException(e.getMessage(), e);

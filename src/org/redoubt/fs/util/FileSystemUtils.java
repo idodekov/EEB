@@ -1,9 +1,11 @@
 package org.redoubt.fs.util;
 
 import java.io.IOException;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
@@ -46,6 +48,21 @@ public class FileSystemUtils {
         return workFile;
     }
     
+    public static Path cloneWorkFile(Path orig) {
+    	IServerConfigurationManager configManager = Factory.getInstance().getServerConfigurationManager();
+        Path workFolder = configManager.getWorkFolder();
+        Path workFile = Paths.get(workFolder.toString(), FileSystemUtils.generateUniqueFileName());
+        
+        try {
+			Files.copy(orig, workFile);
+			return workFile;
+		} catch (IOException e) {
+			sLogger.error("An error has occured while cloning work file [" + orig.toString() + 
+					"] to [" + workFile.toString() + "]. " + e.getMessage(), e);
+			return null;
+		}
+    }
+    
     public static void removeWorkFile(Path file) {
         try {
             Files.delete(file);
@@ -53,6 +70,19 @@ public class FileSystemUtils {
         } catch (IOException e) {
             sLogger.error("Error while removing work file [" + file.toString() + "]. " + e.getMessage(), e);
         }
+    }
+    
+    public static void moveFile(Path origFile, Path newFile, boolean overwrite) {
+        try {
+        	if(overwrite) {
+        		Files.move(origFile, newFile, StandardCopyOption.REPLACE_EXISTING);
+        	} else {
+        		Files.move(origFile, newFile);
+        	}
+		} catch (IOException e) {
+			sLogger.error("An error has occured while moving file [" + origFile.toString() + 
+					"] to [" + newFile.toString() + "]. " + e.getMessage(), e);
+		}
     }
     
     public static boolean verifyFolderPermissions(Path folder) {

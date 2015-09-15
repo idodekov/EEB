@@ -5,7 +5,7 @@
 			<Setting name="direction">inbound</Setting>
 			<Setting name="from">beta</Setting>
 			<Setting name="to">alpha</Setting>
-			<Setting name="productionFolder">E:\</Setting>
+			<Setting name="productionFolder">F:\</Setting>
 		</Protocol>
 		<Setting name="name">AS2 HTTP server</Setting>
 		<Setting name="port">4080</Setting>
@@ -20,7 +20,7 @@
 			<Setting name="url">http://localhost:4080/as2/</Setting>
 			<Setting name="username">idodekov</Setting>
 			<Setting name="password">SECRET123</Setting>
-			<Setting name="sign">false</Setting>
+			<Setting name="sign">true</Setting>
 			<Setting name="signCertAlias">sign1</Setting>
 			<Setting name="signCertKeyPassword">redoubt</Setting>
 			<Setting name="signDigestAlgorithm">sha1</Setting>
@@ -28,7 +28,7 @@
 			<Setting name="encryptCertAlias">encrypt1</Setting>
 			<Setting name="encryptAlgorithm">3des</Setting>
 		</Protocol>
-		<Setting name="folder">E:\work\___WORK</Setting>
+		<Setting name="folder">F:\WORK\___WORK</Setting>
 		<Setting name="name">FileSystem</Setting>
 		<Setting name="pollingInterval">10</Setting>
 	</Transport>
