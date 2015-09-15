@@ -53,7 +53,7 @@ public class As2Protocol extends BaseProtocol {
     public void send(TransferContext context) throws ProtocolException {
         As2ProtocolSettings settings = (As2ProtocolSettings) getSettings();
         try {
-            SMIMECompressedGenerator  gen = new SMIMECompressedGenerator();
+            //SMIMECompressedGenerator  gen = new SMIMECompressedGenerator();
               
             MimeBodyPart msg = new MimeBodyPart();
     
@@ -64,18 +64,20 @@ public class As2Protocol extends BaseProtocol {
             msg.setHeader("Content-Type", "application/octet-stream");
             msg.setHeader("Content-Transfer-Encoding", "binary");
     
-            MimeBodyPart mp = gen.generate(msg, new ZlibCompressor());
-    
+            //MimeBodyPart mp = gen.generate(msg, new ZlibCompressor());
+            
+            msg = secure(msg);
+            
             Properties props = System.getProperties();
             Session session = Session.getDefaultInstance(props, null);
     
-            Address fromUser = new InternetAddress(settings.getFrom());
-            Address toUser = new InternetAddress(settings.getTo());
+            //Address fromUser = new InternetAddress(settings.getFrom());
+            //Address toUser = new InternetAddress(settings.getTo());
     
             MimeMessage body = new MimeMessage(session);
-            body.setFrom(fromUser);
-            body.setRecipient(Message.RecipientType.TO, toUser);
-            body.setContent(mp.getContent(), mp.getContentType());
+            //body.setFrom(fromUser);
+            //body.setRecipient(Message.RecipientType.TO, toUser);
+            body.setContent(msg.getContent(), msg.getContentType());
             body.saveChanges();
             
             body.writeTo(new FileOutputStream(workFile));
@@ -101,6 +103,7 @@ public class As2Protocol extends BaseProtocol {
 
             // Sign the data if requested
             if (sign) {
+                sLogger.debug("Signing is enabled - will attempt to sign the message.");
                 X509Certificate signingCert = certificateManager.getX509Certificate(settings.getSignCertAlias());
                 PrivateKey senderKey = certificateManager.getPrivateKey(settings.getSignCertAlias(), settings.getSignCertKeyPassword().toCharArray());
                 String digest = settings.getSignDigestAlgorithm();
@@ -112,11 +115,12 @@ public class As2Protocol extends BaseProtocol {
 
             // Encrypt the data if requested
             if (encrypt) {
+                sLogger.debug("Encryption is enabled - will attempt to encrypt the message.");
                 String algorithm = settings.getEncryptAlgorithm();
                 X509Certificate receiverCert = certificateManager.getX509Certificate(settings.getEncryptCertAlias());
                 dataBP = cryptoHelper.encrypt(dataBP, receiverCert, algorithm);
 
-                //sLogger.debug("encrypted data" + msg.getLoggingText());
+                sLogger.debug("encrypted data: " + dataBP.toString());
             }
         }
 

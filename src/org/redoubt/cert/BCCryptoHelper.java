@@ -38,11 +38,14 @@ import org.bouncycastle.asn1.smime.SMIMECapabilityVector;
 import org.bouncycastle.asn1.smime.SMIMEEncryptionKeyPreferenceAttribute;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.jcajce.JcaCertStore;
+import org.bouncycastle.cms.CMSAlgorithm;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.RecipientId;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoGeneratorBuilder;
+import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
+import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.mail.smime.SMIMEEnveloped;
 import org.bouncycastle.mail.smime.SMIMEEnvelopedGenerator;
@@ -147,15 +150,14 @@ public class BCCryptoHelper implements ICryptoHelper {
     }
 
     public MimeBodyPart encrypt(MimeBodyPart part, Certificate cert, String algorithm)
-            throws GeneralSecurityException, SMIMEException {
+            throws GeneralSecurityException, SMIMEException, CMSException {
         X509Certificate x509Cert = castCertificate(cert);
 
         String encAlg = convertAlgorithm(algorithm, true);
 
         SMIMEEnvelopedGenerator gen = new SMIMEEnvelopedGenerator();
-        gen.addKeyTransRecipient(x509Cert);
-
-        MimeBodyPart encData = gen.generate(part, encAlg, "BC");
+        gen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(x509Cert).setProvider("BC"));
+        MimeBodyPart encData = gen.generate(part, new JceCMSContentEncryptorBuilder(CMSAlgorithm.RC2_CBC).setProvider("BC").build());
 
         return encData;
     }
