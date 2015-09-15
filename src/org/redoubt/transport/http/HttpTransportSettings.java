@@ -20,12 +20,12 @@ public class HttpTransportSettings extends SettingsHolder implements ITransportS
 		put(HttpTransportSettingsKeyring.PORT, port);
 	}
 
-	public boolean isSecure() {
-		return (boolean) get(HttpTransportSettingsKeyring.SECURE);
+	public boolean isTlsEnabled() {
+		return (boolean) get(HttpTransportSettingsKeyring.TLS_ENABLED);
 	}
 
-	public void setSecure(boolean secure) {
-		put(HttpTransportSettingsKeyring.SECURE, secure);
+	public void setTlsEnabled(boolean secure) {
+		put(HttpTransportSettingsKeyring.TLS_ENABLED, secure);
 	}
 	
 	public String getContextPath() {
@@ -46,7 +46,7 @@ public class HttpTransportSettings extends SettingsHolder implements ITransportS
 	
 	public class HttpTransportSettingsKeyring {
 		public static final String PORT = "port";
-		public static final String SECURE = "secure";
+		public static final String TLS_ENABLED = "tlsEnabled";
 		public static final String CONTEXT_PATH = "contextPath";
 		public static final String NAME = "name";
 	}

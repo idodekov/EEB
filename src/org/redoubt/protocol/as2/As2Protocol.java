@@ -1,26 +1,19 @@
 package org.redoubt.protocol.as2;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
 import java.util.Properties;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cms.jcajce.ZlibCompressor;
 import org.bouncycastle.mail.smime.SMIMECompressedGenerator;
+import org.redoubt.api.configuration.ICertificateManager;
+import org.redoubt.api.configuration.ICryptoHelper;
+import org.redoubt.api.factory.Factory;
 import org.redoubt.api.protocol.TransferContext;
 import org.redoubt.protocol.BaseProtocol;
 import org.redoubt.protocol.ProtocolException;
@@ -77,6 +70,41 @@ public class As2Protocol extends BaseProtocol {
             throw new ProtocolException(e.getMessage(), e);
         }
         
+    }
+    
+    protected MimeBodyPart secure(MimeBodyPart dataBP) throws Exception {
+    	As2ProtocolSettings settings = (As2ProtocolSettings) getSettings();
+        // Set up encrypt/sign variables
+        boolean encrypt = settings.isEncryptionEnabled();
+        boolean sign = settings.isSigningEnabled();
+
+        // Encrypt and/or sign the data if requested
+        if (encrypt || sign) {
+        	ICertificateManager certificateManager = Factory.getInstance().getCertificateManager();
+        	ICryptoHelper cryptoHelper = Factory.getInstance().getCryptoHelper();
+
+            // Sign the data if requested
+            if (sign) {
+                X509Certificate signingCert = certificateManager.getX509Certificate(settings.getSignCertAlias());
+                PrivateKey senderKey = certificateManager.getPrivateKey(settings.getSignCertAlias(), settings.getSignCertKeyPassword().toCharArray());
+                String digest = settings.getSignDigestAlgorithm();
+
+                dataBP = cryptoHelper.sign(dataBP, signingCert, senderKey, digest);
+
+                //sLogger.debug("signed data" + msg.getLoggingText());
+            }
+
+            // Encrypt the data if requested
+            if (encrypt) {
+                String algorithm = settings.getEncryptAlgorithm();
+                X509Certificate receiverCert = certificateManager.getX509Certificate(settings.getEncryptCertAlias());
+                dataBP = cryptoHelper.encrypt(dataBP, receiverCert, algorithm);
+
+                //sLogger.debug("encrypted data" + msg.getLoggingText());
+            }
+        }
+
+        return dataBP;
     }
 	
 }

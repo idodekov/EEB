@@ -4,6 +4,9 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
 import org.redoubt.api.configuration.ICertificateManager;
@@ -45,5 +48,36 @@ public class JksCertificateManager implements ICertificateManager {
     @Override
     public String getKeystoreType() {
         return FactoryConstants.CERTIFICATE_MANAGER_JKS;
+    }
+    
+    public X509Certificate getX509Certificate(String alias) {
+    	try {
+			X509Certificate cert = (X509Certificate) keystore.getCertificate(alias);
+			
+			if (cert == null) {
+                throw new KeyStoreException(alias);
+            }
+			
+			return cert;
+		} catch (KeyStoreException e) {
+			sLogger.error("An error has occured while fetching certificate with alias [" + alias + "] in keystore! " + e.getMessage(), e);
+			return null;
+		}
+    }
+    
+    public PrivateKey getPrivateKey(String alias, char[] password) {
+    	PrivateKey key;
+		try {
+			key = (PrivateKey) keystore.getKey(alias, password);
+			
+			if (key == null) {
+	            throw new KeyStoreException(alias);
+	        }
+
+	        return key;
+		} catch (Exception e) {
+			sLogger.error("An error has occured while fetching key with alias [" + alias + "] in keystore! " + e.getMessage(), e);
+			return null;
+		}
     }
 }
