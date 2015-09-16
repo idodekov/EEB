@@ -21,16 +21,12 @@ import org.redoubt.api.configuration.ICertificateManager;
 import org.redoubt.api.configuration.ICryptoHelper;
 import org.redoubt.api.factory.Factory;
 import org.redoubt.api.protocol.TransferContext;
-import org.redoubt.application.VersionInformation;
 import org.redoubt.fs.util.FileSystemUtils;
 import org.redoubt.protocol.BaseProtocol;
 import org.redoubt.protocol.ProtocolException;
 import org.redoubt.transport.TransportConstants;
 
-import javax.mail.Address;
-import javax.mail.Message;
 import javax.mail.Session;
-import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 
@@ -56,8 +52,6 @@ public class As2Protocol extends BaseProtocol {
     public void send(TransferContext context) throws ProtocolException {
         As2ProtocolSettings settings = (As2ProtocolSettings) getSettings();
         try {
-            //SMIMECompressedGenerator  gen = new SMIMECompressedGenerator();
-              
             MimeBodyPart msg = new MimeBodyPart();
     
             String fullTarget = (String) context.get(TransportConstants.CONTEXT_FULL_TARGET);
@@ -67,23 +61,19 @@ public class As2Protocol extends BaseProtocol {
             msg.setHeader("Content-Type", "application/octet-stream");
             msg.setHeader("Content-Transfer-Encoding", "binary");
     
-            //MimeBodyPart mp = gen.generate(msg, new ZlibCompressor());
-            
             msg = secure(msg);
             
             Properties props = System.getProperties();
             Session session = Session.getDefaultInstance(props, null);
     
             MimeMessage body = new MimeMessage(session);
-            body.setHeader("AS2-From", settings.getFrom());
-            body.setHeader("AS2-To", settings.getTo());
-            body.setHeader("AS2-Version", "1.1");
-            body.setHeader("User-Agent", VersionInformation.APP_NAME + "-" + VersionInformation.APP_VERSION);
+            body.setHeader(As2HeaderDictionary.AS2_FROM, settings.getFrom());
+            body.setHeader(As2HeaderDictionary.AS2_TO, settings.getTo());
+            body.setHeader(As2HeaderDictionary.AS2_VERSION, As2HeaderDictionary.AS2_VERSION_1_1);
+            
             body.setSentDate(new Date());
-            body.setSubject("A message from " + settings.getFrom() + " to " + settings.getTo()+ "");
             body.setContent(msg.getContent(), msg.getContentType());
             body.saveChanges();
-            
             Path tempStorage = FileSystemUtils.createWorkFile();
             
             FileOutputStream fos = new FileOutputStream(tempStorage.toFile());
@@ -91,6 +81,7 @@ public class As2Protocol extends BaseProtocol {
             fos.close();
             
             HttpClientUtils.sendPostRequest(settings, tempStorage);
+            
             FileSystemUtils.moveFile(tempStorage, workFile.toPath(), true);
         }  catch (Exception e) {
             sLogger.error("An error has occured while packaging As2 message. " + e.getMessage(), e);
@@ -104,9 +95,10 @@ public class As2Protocol extends BaseProtocol {
         // Set up encrypt/sign variables
         boolean encrypt = settings.isEncryptionEnabled();
         boolean sign = settings.isSigningEnabled();
+        boolean compress = settings.isCompressionEnabled();
 
         // Encrypt and/or sign the data if requested
-        if (encrypt || sign) {
+        if (encrypt || sign || compress) {
         	ICertificateManager certificateManager = Factory.getInstance().getCertificateManager();
         	ICryptoHelper cryptoHelper = Factory.getInstance().getCryptoHelper();
 
@@ -118,8 +110,13 @@ public class As2Protocol extends BaseProtocol {
                 String digest = settings.getSignDigestAlgorithm();
 
                 dataBP = cryptoHelper.sign(dataBP, signingCert, senderKey, digest);
-
-                //sLogger.debug("signed data" + msg.getLoggingText());
+            }
+            
+            // Compress the data if requested
+            if(compress) {
+            	sLogger.debug("Compression is enabled - will attempt to compress the message.");
+            	SMIMECompressedGenerator  gen = new SMIMECompressedGenerator();
+            	dataBP = gen.generate(dataBP, new ZlibCompressor());
             }
 
             // Encrypt the data if requested
@@ -128,8 +125,6 @@ public class As2Protocol extends BaseProtocol {
                 String algorithm = settings.getEncryptAlgorithm();
                 X509Certificate receiverCert = certificateManager.getX509Certificate(settings.getEncryptCertAlias());
                 dataBP = cryptoHelper.encrypt(dataBP, receiverCert, algorithm);
-
-                sLogger.debug("encrypted data: " + dataBP.toString());
             }
         }
 

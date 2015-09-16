@@ -21,6 +21,8 @@ public class As2ProtocolSettings extends SettingsHolder implements IProtocolSett
 		put(As2ProtocolSettingsKeyring.ENCRYPT_CERT_ALIAS, "");
 		put(As2ProtocolSettingsKeyring.SIGN_DIGEST_ALGORITHM, "sha1");
 		put(As2ProtocolSettingsKeyring.ENCRYPT_ALGORITHM, "3des");
+		put(As2ProtocolSettingsKeyring.COMPRESS, Boolean.toString(false));
+		put(As2ProtocolSettingsKeyring.COMPRESS_ALGORITHM, "zlib");
 	}
 
 	@Override
@@ -141,6 +143,22 @@ public class As2ProtocolSettings extends SettingsHolder implements IProtocolSett
         put(As2ProtocolSettingsKeyring.PRODUCTION_FOLDER, folder);
     }
     
+    public boolean isCompressionEnabled() {
+    	return Boolean.parseBoolean((String) get(As2ProtocolSettingsKeyring.COMPRESS));
+    }
+    
+    public void setCompressionEnabled(boolean compress) {
+    	put(As2ProtocolSettingsKeyring.COMPRESS, Boolean.toString(compress));
+    }
+    
+    public String getCompressionAlgorithm() {
+        return (String) get(As2ProtocolSettingsKeyring.COMPRESS_ALGORITHM);
+    }
+    
+    public void setCompressionAlgorithm(String alg) {
+        put(As2ProtocolSettingsKeyring.COMPRESS_ALGORITHM, alg);
+    }
+    
     public class As2ProtocolSettingsKeyring {
         public static final String DIRECTION = "direction";
         public static final String FROM = "from";
@@ -148,6 +166,7 @@ public class As2ProtocolSettings extends SettingsHolder implements IProtocolSett
         public static final String URL = "url";
         public static final String USERNAME = "username";
         public static final String PASSWORD = "password";
+        public static final String PRODUCTION_FOLDER = "productionFolder";
         public static final String SIGN = "sign";
         public static final String SIGN_CERT_ALIAS = "signCertAlias";
         public static final String SIGN_CERT_KEY_PASSWORD = "signCertKeyPassword";
@@ -155,7 +174,8 @@ public class As2ProtocolSettings extends SettingsHolder implements IProtocolSett
         public static final String ENCRYPT = "encrypt";
         public static final String ENCRYPT_CERT_ALIAS = "encryptCertAlias";
         public static final String ENCRYPT_ALGORITHM = "encryptAlgorithm";
-        public static final String PRODUCTION_FOLDER = "productionFolder";
+        public static final String COMPRESS = "compress";
+        public static final String COMPRESS_ALGORITHM = "compressAlgorithm";
     }
 
 }

@@ -78,6 +78,8 @@ public class HttpClientUtils {
             if(httpclient != null) {
                 httpclient.close();
             }
+            
+            
         }
     }
 }
