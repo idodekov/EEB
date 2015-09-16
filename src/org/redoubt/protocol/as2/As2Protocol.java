@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
+import java.util.Date;
 import java.util.Properties;
 
 import javax.activation.DataHandler;
@@ -20,6 +21,7 @@ import org.redoubt.api.configuration.ICertificateManager;
 import org.redoubt.api.configuration.ICryptoHelper;
 import org.redoubt.api.factory.Factory;
 import org.redoubt.api.protocol.TransferContext;
+import org.redoubt.application.VersionInformation;
 import org.redoubt.fs.util.FileSystemUtils;
 import org.redoubt.protocol.BaseProtocol;
 import org.redoubt.protocol.ProtocolException;
@@ -72,12 +74,13 @@ public class As2Protocol extends BaseProtocol {
             Properties props = System.getProperties();
             Session session = Session.getDefaultInstance(props, null);
     
-            //Address fromUser = new InternetAddress(settings.getFrom());
-            //Address toUser = new InternetAddress(settings.getTo());
-    
             MimeMessage body = new MimeMessage(session);
-            //body.setFrom(fromUser);
-            //body.setRecipient(Message.RecipientType.TO, toUser);
+            body.setHeader("AS2-From", settings.getFrom());
+            body.setHeader("AS2-To", settings.getTo());
+            body.setHeader("AS2-Version", "1.1");
+            body.setHeader("User-Agent", VersionInformation.APP_NAME + "-" + VersionInformation.APP_VERSION);
+            body.setSentDate(new Date());
+            body.setSubject("A message from " + settings.getFrom() + " to " + settings.getTo()+ "");
             body.setContent(msg.getContent(), msg.getContentType());
             body.saveChanges();
             

@@ -189,27 +189,8 @@ public class BCCryptoHelper implements ICryptoHelper {
 
     public MimeBodyPart sign(MimeBodyPart part, X509Certificate cert, PrivateKey key, String digest)
             throws GeneralSecurityException, SMIMEException, MessagingException, OperatorCreationException {
-//        String signDigest = convertAlgorithm(digest, true);
         X509Certificate x509Cert = castCertificate(cert);
         PrivateKey privKey = castKey(key);
-//
-//        SMIMESignedGenerator sGen = new SMIMESignedGenerator();
-//        sGen.addSigner(privKey, x509Cert, signDigest);
-//
-//        MimeMultipart signedData;
-//
-//        signedData = sGen.generate(part, "BC");
-//
-//        MimeBodyPart tmpBody = new MimeBodyPart();
-//        tmpBody.setContent(signedData);
-//        tmpBody.setHeader("Content-Type", signedData.getContentType());
-        
-        
-        
-        
-        
-        
-        //TODO
         
         List<X509Certificate> certList = new ArrayList<X509Certificate>();
 
