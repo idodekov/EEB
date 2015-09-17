@@ -170,6 +170,7 @@ public class BCCryptoHelper implements ICryptoHelper {
 
         SMIMEEnvelopedGenerator gen = new SMIMEEnvelopedGenerator();
         gen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(x509Cert).setProvider("BC"));
+        gen.setContentTransferEncoding("binary");
         MimeBodyPart encData = gen.generate(part, new JceCMSContentEncryptorBuilder(encAlg).setProvider("BC").build());
         
         return encData;
@@ -211,6 +212,7 @@ public class BCCryptoHelper implements ICryptoHelper {
         signedAttrs.add(new SMIMEEncryptionKeyPreferenceAttribute(issAndSer));
         
         SMIMESignedGenerator gen = new SMIMESignedGenerator();
+        gen.setContentTransferEncoding("binary");
         gen.addSignerInfoGenerator(new JcaSimpleSignerInfoGeneratorBuilder().setProvider("BC").setSignedAttributeGenerator(new AttributeTable(signedAttrs)).build("SHA1withRSA", privKey, x509Cert));
         gen.addCertificates(certs);
         MimeMultipart mm = gen.generate(part);

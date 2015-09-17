@@ -10,9 +10,9 @@ import java.nio.file.attribute.BasicFileAttributes;
 import org.apache.log4j.Logger;
 import org.redoubt.api.protocol.IProtocol;
 import org.redoubt.api.protocol.TransferContext;
-import org.redoubt.fs.util.FileSystemUtils;
 import org.redoubt.protocol.ProtocolException;
 import org.redoubt.transport.TransportConstants;
+import org.redoubt.util.FileSystemUtils;
 
 public class FolderPollingThread extends Thread {
     private static final Logger sLogger = Logger.getLogger(FolderPollingThread.class);

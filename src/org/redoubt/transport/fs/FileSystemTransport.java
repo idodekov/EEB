@@ -4,9 +4,9 @@ import java.nio.file.Path;
 
 import org.apache.log4j.Logger;
 import org.redoubt.api.transport.ITransportSettings;
-import org.redoubt.fs.util.FileSystemUtils;
 import org.redoubt.transport.BaseTransport;
 import org.redoubt.transport.TransportException;
+import org.redoubt.util.FileSystemUtils;
 
 public class FileSystemTransport extends BaseTransport {
     private static final Logger sLogger = Logger.getLogger(FileSystemTransport.class);

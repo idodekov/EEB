@@ -21,10 +21,10 @@ import org.redoubt.api.configuration.ICertificateManager;
 import org.redoubt.api.configuration.ICryptoHelper;
 import org.redoubt.api.factory.Factory;
 import org.redoubt.api.protocol.TransferContext;
-import org.redoubt.fs.util.FileSystemUtils;
 import org.redoubt.protocol.BaseProtocol;
 import org.redoubt.protocol.ProtocolException;
 import org.redoubt.transport.TransportConstants;
+import org.redoubt.util.FileSystemUtils;
 
 import javax.mail.Session;
 import javax.mail.internet.MimeBodyPart;
@@ -71,7 +71,6 @@ public class As2Protocol extends BaseProtocol {
             body.setHeader(As2HeaderDictionary.AS2_TO, settings.getTo());
             body.setHeader(As2HeaderDictionary.AS2_VERSION, As2HeaderDictionary.AS2_VERSION_1_1);
             
-            body.setSentDate(new Date());
             body.setContent(msg.getContent(), msg.getContentType());
             body.saveChanges();
             Path tempStorage = FileSystemUtils.createWorkFile();

@@ -12,9 +12,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.redoubt.api.protocol.IProtocol;
 import org.redoubt.api.protocol.TransferContext;
-import org.redoubt.fs.util.FileSystemUtils;
 import org.redoubt.transport.TransportConstants;
 import org.redoubt.transport.http.HttpTransportSettings;
+import org.redoubt.util.FileSystemUtils;
 
 public class As2HttpListener extends HttpServlet {
     private static final Logger sLogger = Logger.getLogger(As2HttpListener.class);

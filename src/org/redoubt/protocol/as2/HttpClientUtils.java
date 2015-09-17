@@ -18,6 +18,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
+import org.redoubt.application.VersionInformation;
 
 public class HttpClientUtils {
     private static final Logger sLogger = Logger.getLogger(HttpClientUtils.class);
@@ -54,6 +55,9 @@ public class HttpClientUtils {
 //            
             httpPost.setEntity(entity);
             
+            httpPost.setHeader("Connection", "close, TE");
+            httpPost.setHeader("User-Agent", VersionInformation.APP_NAME + " " + VersionInformation.APP_VERSION);
+            
             ResponseHandler<String> responseHandler = new ResponseHandler<String>() {
     
                 @Override
@@ -68,6 +72,7 @@ public class HttpClientUtils {
                 }
     
             };
+            
             
             String response = httpclient.execute(httpPost, responseHandler);
         } finally {
