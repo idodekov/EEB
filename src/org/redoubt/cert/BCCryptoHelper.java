@@ -190,12 +190,11 @@ public class BCCryptoHelper implements ICryptoHelper {
 
     public MimeBodyPart sign(MimeBodyPart part, X509Certificate cert, PrivateKey key, String digest)
             throws GeneralSecurityException, SMIMEException, MessagingException, OperatorCreationException {
-        X509Certificate x509Cert = castCertificate(cert);
         PrivateKey privKey = castKey(key);
         
         List<X509Certificate> certList = new ArrayList<X509Certificate>();
 
-        certList.add(x509Cert);
+        certList.add(cert);
 
         Store certs = new JcaCertStore(certList);
         
@@ -208,12 +207,12 @@ public class BCCryptoHelper implements ICryptoHelper {
         
         signedAttrs.add(new SMIMECapabilitiesAttribute(caps));
         
-        IssuerAndSerialNumber issAndSer = new IssuerAndSerialNumber(new X500Name(x509Cert.getIssuerDN().getName()), x509Cert.getSerialNumber());
+        IssuerAndSerialNumber issAndSer = new IssuerAndSerialNumber(new X500Name(cert.getIssuerDN().getName()), cert.getSerialNumber());
         signedAttrs.add(new SMIMEEncryptionKeyPreferenceAttribute(issAndSer));
         
         SMIMESignedGenerator gen = new SMIMESignedGenerator();
         gen.setContentTransferEncoding("binary");
-        gen.addSignerInfoGenerator(new JcaSimpleSignerInfoGeneratorBuilder().setProvider("BC").setSignedAttributeGenerator(new AttributeTable(signedAttrs)).build("SHA1withRSA", privKey, x509Cert));
+        gen.addSignerInfoGenerator(new JcaSimpleSignerInfoGeneratorBuilder().setProvider("BC").setSignedAttributeGenerator(new AttributeTable(signedAttrs)).build("SHA1withRSA", privKey, cert));
         gen.addCertificates(certs);
         MimeMultipart mm = gen.generate(part);
         
