@@ -31,6 +31,7 @@ public class As2Message {
 	private String signDigestAlgorithm;
 	private String encryptAlgorithm;
 	private String encryptCertAlias;
+	private String compressionAlgorithm;
 	
 	public As2Message() {
 		data = new MimeBodyPart();
@@ -51,6 +52,7 @@ public class As2Message {
         signDigestAlgorithm = settings.getSignDigestAlgorithm();
         encryptAlgorithm = settings.getEncryptAlgorithm();
         encryptCertAlias = settings.getEncryptCertAlias();
+        compressionAlgorithm = settings.getCompressionAlgorithm();
 	}
 	
 	public MimeMessage generateMimeData(String payload) throws Exception {
@@ -87,7 +89,7 @@ public class As2Message {
         	// Compress the data if requested
             if(compress) {
             	sLogger.debug("Compression is enabled - will attempt to compress the message.");
-            	data = cryptoHelper.compress(data);
+            	data = cryptoHelper.compress(data, compressionAlgorithm);
             }
         	
             // Sign the data if requested

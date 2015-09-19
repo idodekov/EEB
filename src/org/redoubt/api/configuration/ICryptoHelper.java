@@ -12,6 +12,7 @@ public interface ICryptoHelper {
     static final String CRYPT_3DES = "3des";
     static final String CRYPT_IDEA = "idea";
     static final String CRYPT_RC2 = "rc2";
+    static final String COMPRESS_ZLIB = "zlib";
     
     void init();
     
@@ -31,7 +32,7 @@ public interface ICryptoHelper {
 
     MimeBodyPart verify(MimeBodyPart part, X509Certificate cert) throws Exception;
     
-    MimeBodyPart compress(MimeBodyPart part) throws Exception;
+    MimeBodyPart compress(MimeBodyPart part, String alg) throws Exception;
     
     MimeBodyPart decompress(MimeBodyPart part) throws Exception;
 }

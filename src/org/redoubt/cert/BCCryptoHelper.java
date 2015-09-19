@@ -57,9 +57,11 @@ import org.bouncycastle.mail.smime.SMIMESigned;
 import org.bouncycastle.mail.smime.SMIMESignedGenerator;
 import org.bouncycastle.mail.smime.SMIMEUtil;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.OutputCompressor;
 import org.bouncycastle.util.Store;
 import org.bouncycastle.util.encoders.Base64;
 import org.redoubt.api.configuration.ICryptoHelper;
+import org.redoubt.protocol.ProtocolException;
 import org.redoubt.protocol.as2.As2HeaderDictionary;
 
 public class BCCryptoHelper implements ICryptoHelper {
@@ -155,8 +157,7 @@ public class BCCryptoHelper implements ICryptoHelper {
     public void deinit() {
     }
 
-    public MimeBodyPart encrypt(MimeBodyPart part, X509Certificate cert, String algorithm)
-            throws GeneralSecurityException, SMIMEException, CMSException {
+    public MimeBodyPart encrypt(MimeBodyPart part, X509Certificate cert, String algorithm) throws Exception {
         X509Certificate x509Cert = castCertificate(cert);
         
         ASN1ObjectIdentifier encAlg = null;
@@ -169,7 +170,9 @@ public class BCCryptoHelper implements ICryptoHelper {
         	encAlg = CMSAlgorithm.CAST5_CBC;
         } else if(CRYPT_IDEA.equals(algorithm)) {
         	encAlg = CMSAlgorithm.IDEA_CBC;
-        }
+        } else {
+			throw new ProtocolException("Unknown encryption algorithm [" + algorithm + "]. Message will not be processed.");
+		}
 
         SMIMEEnvelopedGenerator gen = new SMIMEEnvelopedGenerator();
         gen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(x509Cert).setProvider("BC"));
@@ -191,8 +194,7 @@ public class BCCryptoHelper implements ICryptoHelper {
         CommandMap.setDefaultCommandMap(mc);
     }
 
-    public MimeBodyPart sign(MimeBodyPart part, X509Certificate cert, PrivateKey key, String digest)
-            throws GeneralSecurityException, SMIMEException, MessagingException, OperatorCreationException {
+    public MimeBodyPart sign(MimeBodyPart part, X509Certificate cert, PrivateKey key, String digest) throws Exception {
         PrivateKey privKey = castKey(key);
         String digestAlg = null;
         
@@ -200,7 +202,9 @@ public class BCCryptoHelper implements ICryptoHelper {
         	digestAlg = "SHA1withRSA";
         } else if(DIGEST_MD5.equals(digest)) {
         	digestAlg = "MD5withRSA";
-        }
+        } else {
+			throw new ProtocolException("Unknown digest algorithm [" + digest + "]. Message will not be processed.");
+		}
         
         List<X509Certificate> certList = new ArrayList<X509Certificate>();
 
@@ -340,10 +344,18 @@ public class BCCryptoHelper implements ICryptoHelper {
     }
 
 	@Override
-	public MimeBodyPart compress(MimeBodyPart part) throws Exception {
+	public MimeBodyPart compress(MimeBodyPart part, String alg) throws Exception {
+		OutputCompressor compressor = null;
+		
+		if(COMPRESS_ZLIB.equals(alg)) {
+			compressor = new ZlibCompressor();
+		} else {
+			throw new ProtocolException("Unknown compression algorithm [" + alg + "]. Message will not be processed.");
+		}
+		
 		SMIMECompressedGenerator  gen = new SMIMECompressedGenerator();
     	gen.setContentTransferEncoding(As2HeaderDictionary.TRANSFER_ENCODING_BINARY);
-    	MimeBodyPart dataBP = gen.generate(part, new ZlibCompressor());
+    	MimeBodyPart dataBP = gen.generate(part, compressor);
 		return dataBP;
 	}
 
