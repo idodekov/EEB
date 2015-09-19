@@ -47,7 +47,9 @@ import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoGeneratorBuilder;
 import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
+import org.bouncycastle.cms.jcajce.ZlibCompressor;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.mail.smime.SMIMECompressedGenerator;
 import org.bouncycastle.mail.smime.SMIMEEnveloped;
 import org.bouncycastle.mail.smime.SMIMEEnvelopedGenerator;
 import org.bouncycastle.mail.smime.SMIMEException;
@@ -192,6 +194,13 @@ public class BCCryptoHelper implements ICryptoHelper {
     public MimeBodyPart sign(MimeBodyPart part, X509Certificate cert, PrivateKey key, String digest)
             throws GeneralSecurityException, SMIMEException, MessagingException, OperatorCreationException {
         PrivateKey privKey = castKey(key);
+        String digestAlg = null;
+        
+        if(DIGEST_SHA1.equals(digest)) {
+        	digestAlg = "SHA1withRSA";
+        } else if(DIGEST_MD5.equals(digest)) {
+        	digestAlg = "MD5withRSA";
+        }
         
         List<X509Certificate> certList = new ArrayList<X509Certificate>();
 
@@ -213,13 +222,13 @@ public class BCCryptoHelper implements ICryptoHelper {
         
         SMIMESignedGenerator gen = new SMIMESignedGenerator();
         gen.setContentTransferEncoding(As2HeaderDictionary.TRANSFER_ENCODING_BINARY);
-        gen.addSignerInfoGenerator(new JcaSimpleSignerInfoGeneratorBuilder().setProvider("BC").setSignedAttributeGenerator(new AttributeTable(signedAttrs)).build("SHA1withRSA", privKey, cert));
+        gen.addSignerInfoGenerator(new JcaSimpleSignerInfoGeneratorBuilder().setProvider("BC").setSignedAttributeGenerator(new AttributeTable(signedAttrs)).build(digestAlg, privKey, cert));
         gen.addCertificates(certs);
         MimeMultipart mm = gen.generate(part);
 
         MimeBodyPart tempBody = new MimeBodyPart();
         tempBody.setContent(mm);
-        tempBody.setHeader("Content-Type", mm.getContentType());
+        tempBody.setHeader(As2HeaderDictionary.CONTENT_TYPE, mm.getContentType());
 
         return tempBody;
     }
@@ -329,5 +338,19 @@ public class BCCryptoHelper implements ICryptoHelper {
 
         return bIn;
     }
+
+	@Override
+	public MimeBodyPart compress(MimeBodyPart part) throws Exception {
+		SMIMECompressedGenerator  gen = new SMIMECompressedGenerator();
+    	gen.setContentTransferEncoding(As2HeaderDictionary.TRANSFER_ENCODING_BINARY);
+    	MimeBodyPart dataBP = gen.generate(part, new ZlibCompressor());
+		return dataBP;
+	}
+
+	@Override
+	public MimeBodyPart decompress(MimeBodyPart part) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }

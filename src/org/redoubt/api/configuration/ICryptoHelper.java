@@ -12,6 +12,10 @@ public interface ICryptoHelper {
     static final String CRYPT_3DES = "3des";
     static final String CRYPT_IDEA = "idea";
     static final String CRYPT_RC2 = "rc2";
+    
+    void init();
+    
+    void deinit();
 
     boolean isEncrypted(MimeBodyPart part) throws Exception;
 
@@ -21,13 +25,13 @@ public interface ICryptoHelper {
 
     MimeBodyPart decrypt(MimeBodyPart part, X509Certificate cert, PrivateKey key) throws Exception;
 
-    void deinit();
-
     MimeBodyPart encrypt(MimeBodyPart part, X509Certificate cert, String algorithm) throws Exception;
-
-    void init();
-
+    
     MimeBodyPart sign(MimeBodyPart part, X509Certificate cert, PrivateKey key, String digest) throws Exception;
 
     MimeBodyPart verify(MimeBodyPart part, X509Certificate cert) throws Exception;
+    
+    MimeBodyPart compress(MimeBodyPart part) throws Exception;
+    
+    MimeBodyPart decompress(MimeBodyPart part) throws Exception;
 }

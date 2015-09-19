@@ -10,6 +10,9 @@ public class As2HeaderDictionary {
     public static final String AS2_VERSION_1_1 = "1.1";
     public static final String AS2_VERSION_1_2 = "1.2";
     
+    public static final String CONTENT_TYPE = "Content-Type";
+    public static final String CONTENT_TRANSFER_ENCODING = "Content-Transfer-Encoding";
+    
     public static final String MIME_TYPE_APPLICATION_OCTET_STREAM = "application/octet-stream";
     
     public static final String TRANSFER_ENCODING_BINARY = "binary";
