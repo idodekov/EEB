@@ -107,4 +107,18 @@ public class FileSystemUtils {
         
         return true;
     }
+    
+    public static boolean checkAs2SizeRestrictions(Path workFile) throws IOException {
+    	long size = Files.size(workFile);
+    	IServerConfigurationManager configurationManager = Factory.getInstance().getServerConfigurationManager();
+    	long maxSize = configurationManager.getAs2MaxFileSizeMB() * 1024 * 1024;
+    	
+    	if(size > maxSize) {
+    		throw new IOException("File [" + workFile.toString() + "] is [" + size + 
+    				"] bytes long, but the maximum allowed size is [" + configurationManager.getAs2MaxFileSizeMB() + 
+    				"] MB. The file will not be processed.");
+    	}
+    	
+    	return true;
+    }
 }
