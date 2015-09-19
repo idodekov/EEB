@@ -7,4 +7,5 @@
 	<ConfigurationOption name="TruststoreFile" 		value="conf/truststore.jks" />
 	<ConfigurationOption name="KeystorePassword" 	value="redoubt" />
 	<ConfigurationOption name="TruststorePassword" 	value="redoubt" />
+	<ConfigurationOption name="As2MaxFileSizeMB" 	value="10" />
 </GlobalConfiguration>

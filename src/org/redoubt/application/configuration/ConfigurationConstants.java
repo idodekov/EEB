@@ -14,6 +14,7 @@ public class ConfigurationConstants {
     public static final String CONFIGURATION_OPTION_KEYSTORE_PASSWORD = "KeystorePassword";
     public static final String CONFIGURATION_OPTION_TRUSTSTORE_FILE = "TruststoreFile";
     public static final String CONFIGURATION_OPTION_TRUSTSTORE_PASSWORD = "TruststorePassword";
+    public static final String CONFIGURATION_OPTION_AS2_MAX_FILE_SIZE_MB = "As2MaxFileSizeMB";
     
     public static final String SHUTDOWN_COMMAND = "shutdown";
     

@@ -6,6 +6,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.log4j.Logger;
+import org.redoubt.api.configuration.IServerConfigurationManager;
+import org.redoubt.api.factory.Factory;
 import org.redoubt.api.protocol.TransferContext;
 import org.redoubt.protocol.BaseProtocol;
 import org.redoubt.protocol.ProtocolException;
@@ -39,6 +41,8 @@ public class As2Protocol extends BaseProtocol {
         	String fullTarget = (String) context.get(TransportConstants.CONTEXT_FULL_TARGET);
         	Path workFile = Paths.get(fullTarget);
         	
+        	checkSizeRestrictions(workFile);
+        	
         	As2Message message = new As2Message(settings);
         	MimeMessage body = message.generateMimeData(fullTarget);
             
@@ -54,4 +58,17 @@ public class As2Protocol extends BaseProtocol {
         
     }
 	
+    private boolean checkSizeRestrictions(Path workFile) throws IOException {
+    	long size = Files.size(workFile);
+    	IServerConfigurationManager configurationManager = Factory.getInstance().getServerConfigurationManager();
+    	long maxSize = configurationManager.getAs2MaxFileSizeMB() * 1024 * 1024;
+    	
+    	if(size > maxSize) {
+    		throw new IOException("File [" + workFile.toString() + "] is [" + size + 
+    				"] bytes long, but the maximum allowed size is [" + configurationManager.getAs2MaxFileSizeMB() + 
+    				"] MB. The file will not be processed.");
+    	}
+    	
+    	return true;
+    }
 }

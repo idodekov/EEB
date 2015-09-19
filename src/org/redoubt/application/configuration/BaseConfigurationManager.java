@@ -93,5 +93,10 @@ public abstract class BaseConfigurationManager implements IServerConfigurationMa
     public String getTruststorePassword() {
         return getConfigurationOption(ConfigurationConstants.CONFIGURATION_OPTION_TRUSTSTORE_PASSWORD);
     }
+    
+    @Override
+	public long getAs2MaxFileSizeMB() {
+		return Long.parseLong(getConfigurationOption(ConfigurationConstants.CONFIGURATION_OPTION_AS2_MAX_FILE_SIZE_MB));
+	}
 
 }

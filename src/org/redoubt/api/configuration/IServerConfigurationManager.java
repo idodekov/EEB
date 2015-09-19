@@ -14,4 +14,5 @@ public interface IServerConfigurationManager {
     String getKeystorePassword();
     Path getTruststoreFile();
     String getTruststorePassword();
+    long getAs2MaxFileSizeMB();
 }
