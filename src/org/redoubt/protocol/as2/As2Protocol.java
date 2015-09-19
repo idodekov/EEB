@@ -3,9 +3,12 @@ package org.redoubt.protocol.as2;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.Date;
@@ -55,11 +58,12 @@ public class As2Protocol extends BaseProtocol {
             MimeBodyPart msg = new MimeBodyPart();
     
             String fullTarget = (String) context.get(TransportConstants.CONTEXT_FULL_TARGET);
-            File workFile = new File(fullTarget);
+            Path workFile = Paths.get(fullTarget);
             
-            msg.setDataHandler(new DataHandler(new FileDataSource(workFile)));
-            msg.setHeader("Content-Type", "application/octet-stream");
-            msg.setHeader("Content-Transfer-Encoding", "binary");
+            // TODO: add support for large files
+            msg.setDataHandler(new DataHandler(Files.readAllBytes(workFile), As2HeaderDictionary.MIME_TYPE_APPLICATION_OCTET_STREAM));
+            msg.setHeader("Content-Type", As2HeaderDictionary.MIME_TYPE_APPLICATION_OCTET_STREAM);
+            msg.setHeader("Content-Transfer-Encoding", As2HeaderDictionary.TRANSFER_ENCODING_BINARY);
     
             msg = secure(msg);
             
@@ -73,15 +77,12 @@ public class As2Protocol extends BaseProtocol {
             
             body.setContent(msg.getContent(), msg.getContentType());
             body.saveChanges();
-            Path tempStorage = FileSystemUtils.createWorkFile();
             
-            FileOutputStream fos = new FileOutputStream(tempStorage.toFile());
-            body.writeTo(fos);
-            fos.close();
+            Path tempStorage = FileSystemUtils.createWorkFile();
+            FileSystemUtils.writeMimeMessageToFile(body, tempStorage);
             
             HttpClientUtils.sendPostRequest(settings, tempStorage);
-            
-            FileSystemUtils.moveFile(tempStorage, workFile.toPath(), true);
+            FileSystemUtils.moveFile(tempStorage, workFile, true);
         }  catch (Exception e) {
             sLogger.error("An error has occured while packaging As2 message. " + e.getMessage(), e);
             throw new ProtocolException(e.getMessage(), e);
@@ -101,6 +102,14 @@ public class As2Protocol extends BaseProtocol {
         	ICertificateManager certificateManager = Factory.getInstance().getCertificateManager();
         	ICryptoHelper cryptoHelper = Factory.getInstance().getCryptoHelper();
 
+        	// Compress the data if requested
+            if(compress) {
+            	sLogger.debug("Compression is enabled - will attempt to compress the message.");
+            	SMIMECompressedGenerator  gen = new SMIMECompressedGenerator();
+            	gen.setContentTransferEncoding(As2HeaderDictionary.TRANSFER_ENCODING_BINARY);
+            	dataBP = gen.generate(dataBP, new ZlibCompressor());
+            }
+        	
             // Sign the data if requested
             if (sign) {
                 sLogger.debug("Signing is enabled - will attempt to sign the message.");
@@ -111,13 +120,6 @@ public class As2Protocol extends BaseProtocol {
                 dataBP = cryptoHelper.sign(dataBP, signingCert, senderKey, digest);
             }
             
-            // Compress the data if requested
-            if(compress) {
-            	sLogger.debug("Compression is enabled - will attempt to compress the message.");
-            	SMIMECompressedGenerator  gen = new SMIMECompressedGenerator();
-            	dataBP = gen.generate(dataBP, new ZlibCompressor());
-            }
-
             // Encrypt the data if requested
             if (encrypt) {
                 sLogger.debug("Encryption is enabled - will attempt to encrypt the message.");

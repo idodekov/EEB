@@ -58,6 +58,7 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.Store;
 import org.bouncycastle.util.encoders.Base64;
 import org.redoubt.api.configuration.ICryptoHelper;
+import org.redoubt.protocol.as2.As2HeaderDictionary;
 
 public class BCCryptoHelper implements ICryptoHelper {
 	
@@ -170,7 +171,7 @@ public class BCCryptoHelper implements ICryptoHelper {
 
         SMIMEEnvelopedGenerator gen = new SMIMEEnvelopedGenerator();
         gen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(x509Cert).setProvider("BC"));
-        gen.setContentTransferEncoding("binary");
+        gen.setContentTransferEncoding(As2HeaderDictionary.TRANSFER_ENCODING_BINARY);
         MimeBodyPart encData = gen.generate(part, new JceCMSContentEncryptorBuilder(encAlg).setProvider("BC").build());
         
         return encData;
@@ -211,15 +212,14 @@ public class BCCryptoHelper implements ICryptoHelper {
         signedAttrs.add(new SMIMEEncryptionKeyPreferenceAttribute(issAndSer));
         
         SMIMESignedGenerator gen = new SMIMESignedGenerator();
-        gen.setContentTransferEncoding("binary");
+        gen.setContentTransferEncoding(As2HeaderDictionary.TRANSFER_ENCODING_BINARY);
         gen.addSignerInfoGenerator(new JcaSimpleSignerInfoGeneratorBuilder().setProvider("BC").setSignedAttributeGenerator(new AttributeTable(signedAttrs)).build("SHA1withRSA", privKey, cert));
         gen.addCertificates(certs);
         MimeMultipart mm = gen.generate(part);
-        
+
         MimeBodyPart tempBody = new MimeBodyPart();
         tempBody.setContent(mm);
         tempBody.setHeader("Content-Type", mm.getContentType());
-        
 
         return tempBody;
     }

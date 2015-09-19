@@ -1,11 +1,16 @@
 package org.redoubt.util;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.UUID;
+
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 
 import org.apache.log4j.Logger;
 import org.redoubt.api.configuration.IServerConfigurationManager;
@@ -82,6 +87,13 @@ public class FileSystemUtils {
 			sLogger.error("An error has occured while moving file [" + origFile.toString() + 
 					"] to [" + newFile.toString() + "]. " + e.getMessage(), e);
 		}
+    }
+    
+    public static void writeMimeMessageToFile(MimeMessage body, Path file) throws IOException, MessagingException {
+    	OutputStream fos = Files.newOutputStream(file, StandardOpenOption.CREATE_NEW);
+        body.writeTo(fos);
+        fos.flush();
+        fos.close();
     }
     
     public static boolean verifyFolderPermissions(Path folder) {

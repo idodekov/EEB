@@ -27,12 +27,12 @@
 			<Setting name="encrypt">false</Setting>
 			<Setting name="encryptCertAlias">encrypt1</Setting>
 			<Setting name="encryptAlgorithm">3des</Setting>
-			<Setting name="compress">false</Setting>
+			<Setting name="compress">true</Setting>
 			<Setting name="compressAlgorithm">zlib</Setting>
 		</Protocol>
 		<Setting name="folder">F:\WORK\___WORK</Setting>
 		<Setting name="name">FileSystem</Setting>
-		<Setting name="pollingInterval">10</Setting>
+		<Setting name="pollingInterval">2</Setting>
 	</Transport>
 </Transports>
 
