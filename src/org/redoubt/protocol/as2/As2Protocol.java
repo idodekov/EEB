@@ -3,12 +3,14 @@ package org.redoubt.protocol.as2;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.Map;
 
 import javax.activation.DataHandler;
 import javax.mail.internet.MimeBodyPart;
+import javax.mail.util.ByteArrayDataSource;
 
 import org.apache.log4j.Logger;
 import org.redoubt.api.configuration.ICertificateManager;
@@ -34,7 +36,8 @@ public class As2Protocol extends BaseProtocol {
 	        FileSystemUtils.checkAs2SizeRestrictions(workFile);
 	        
 	        MimeBodyPart data = new MimeBodyPart();
-	        data.setDataHandler(new DataHandler(Files.readAllBytes(workFile), As2HeaderDictionary.MIME_TYPE_APPLICATION_OCTET_STREAM));
+	        data.setDataHandler(new DataHandler(new ByteArrayDataSource(Files.readAllBytes(workFile), 
+	        		As2HeaderDictionary.MIME_TYPE_APPLICATION_OCTET_STREAM)));
 	        
 	        @SuppressWarnings("unchecked")
 			Map<String,String> headersMap = (Map<String, String>) context.get(TransportConstants.CONTEXT_HEADER_MAP);
@@ -44,17 +47,18 @@ public class As2Protocol extends BaseProtocol {
 	        }
 	        
 	        data.writeTo(Files.newOutputStream(workFile));
-	        decryptAndVerify(data);
+	        data = decryptAndVerify(data);
 	        
 	        Path productionFile = Paths.get(productionFolder.toString(), workFile.getFileName().toString());
-	        data.writeTo(Files.newOutputStream(productionFile));
+	        
+	        Files.copy(data.getInputStream(), productionFile, StandardCopyOption.REPLACE_EXISTING);
         } catch (Exception e) {
             sLogger.error("An error has occured while unpackaging As2 message. " + e.getMessage(), e);
             throw new ProtocolException(e.getMessage(), e);
         }
     }
     
-    private void decryptAndVerify(MimeBodyPart data) throws Exception {
+    private MimeBodyPart decryptAndVerify(MimeBodyPart data) throws Exception {
     	As2ProtocolSettings settings = (As2ProtocolSettings) getSettings();
     	ICertificateManager certificateManager = Factory.getInstance().getCertificateManager();
     	ICryptoHelper cryptoHelper = Factory.getInstance().getCryptoHelper();
@@ -87,8 +91,10 @@ public class As2Protocol extends BaseProtocol {
         		throw new ProtocolException("Signing is enabled, however the message doesn't appear to be signed. Will reject it.");
         	}
         }
-    		
+   		
    		//TODO: Check for compression
+   		
+   		return data;
     }
 
     @Override

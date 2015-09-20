@@ -43,15 +43,19 @@ import org.bouncycastle.cms.CMSAlgorithm;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.RecipientId;
 import org.bouncycastle.cms.RecipientInformation;
+import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoGeneratorBuilder;
 import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
+import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
+import org.bouncycastle.cms.jcajce.JceKeyTransRecipientId;
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
 import org.bouncycastle.cms.jcajce.ZlibCompressor;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.mail.smime.SMIMECompressedGenerator;
 import org.bouncycastle.mail.smime.SMIMEEnveloped;
 import org.bouncycastle.mail.smime.SMIMEEnvelopedGenerator;
+import org.bouncycastle.mail.smime.SMIMEEnvelopedParser;
 import org.bouncycastle.mail.smime.SMIMEException;
 import org.bouncycastle.mail.smime.SMIMESigned;
 import org.bouncycastle.mail.smime.SMIMESignedGenerator;
@@ -123,35 +127,27 @@ public class BCCryptoHelper implements ICryptoHelper {
         return micResult.toString();
     }
 
-    public MimeBodyPart decrypt(MimeBodyPart part, X509Certificate cert, PrivateKey key)
-            throws GeneralSecurityException, MessagingException, CMSException, IOException,
-            SMIMEException {
+    public MimeBodyPart decrypt(MimeBodyPart part, X509Certificate cert, PrivateKey key) throws Exception {
         // Make sure the data is encrypted
         if (!isEncrypted(part)) {
             throw new GeneralSecurityException("Content-Type indicates data isn't encrypted");
         }
 
-        // Cast parameters to what BC needs
-        X509Certificate x509Cert = castCertificate(cert);
-
-        // Parse the MIME body into an SMIME envelope object
-        SMIMEEnveloped envelope = new SMIMEEnveloped(part);
-
         // Get the recipient object for decryption
-        RecipientId recId = new RecipientId();
-        recId.setSerialNumber(x509Cert.getSerialNumber());
-        recId.setIssuer(x509Cert.getIssuerX500Principal().getEncoded());
+        RecipientId recId = new JceKeyTransRecipientId(cert);
+        
+        SMIMEEnvelopedParser parser = new SMIMEEnvelopedParser(part);
 
-        RecipientInformation recipient = envelope.getRecipientInfos().get(recId);
+        RecipientInformationStore recipients = parser.getRecipientInfos();
+        RecipientInformation recipient = recipients.get(recId);
 
         if (recipient == null) {
             throw new GeneralSecurityException("Certificate does not match part signature");
         }
+        
+        MimeBodyPart res = SMIMEUtil.toMimeBodyPart(recipient.getContentStream(new JceKeyTransEnvelopedRecipient(key).setProvider("BC")));
 
-        // try to decrypt the data
-        byte[] decryptedData = recipient.getContent(key, "BC");
-
-        return SMIMEUtil.toMimeBodyPart(decryptedData);
+        return res;
     }
 
     public void deinit() {

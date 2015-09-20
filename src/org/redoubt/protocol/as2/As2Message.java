@@ -13,6 +13,7 @@ import java.util.Map;
 import javax.activation.DataHandler;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
+import javax.mail.util.ByteArrayDataSource;
 
 import org.apache.log4j.Logger;
 import org.redoubt.api.configuration.ICertificateManager;
@@ -72,7 +73,8 @@ public class As2Message {
 		messageId = Utils.generateMessageID(fromAddress);
         
         // TODO: add support for large files
-		data.setDataHandler(new DataHandler(Files.readAllBytes(workFile), As2HeaderDictionary.MIME_TYPE_APPLICATION_OCTET_STREAM));
+		data.setDataHandler(new DataHandler(new ByteArrayDataSource(Files.readAllBytes(workFile), 
+				As2HeaderDictionary.MIME_TYPE_APPLICATION_OCTET_STREAM)));
 		
 		data.setHeader(As2HeaderDictionary.CONTENT_TYPE, As2HeaderDictionary.MIME_TYPE_APPLICATION_OCTET_STREAM);
 		data.setHeader(As2HeaderDictionary.CONTENT_TRANSFER_ENCODING, As2HeaderDictionary.TRANSFER_ENCODING_BINARY);
