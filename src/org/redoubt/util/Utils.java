@@ -15,6 +15,23 @@ public class Utils {
 	
 	private Utils() {}
 	
+	public static String generateMessageSender(String sender) {
+		String hostname;
+		try {
+			hostname = InetAddress.getLocalHost().getHostName();
+		} catch (UnknownHostException e) {
+			sLogger.warn("Unable to determine hostname of local machine. " + e.getMessage(), e);
+			hostname = "localhost";
+		}
+		
+		StringBuilder senderBuilder = new StringBuilder();
+		senderBuilder.append(sender);
+		senderBuilder.append("@");
+		senderBuilder.append(hostname);
+		
+		return senderBuilder.toString();
+	}
+	
 	public static String generateMessageID(String sender) {
 		SimpleDateFormat format = new SimpleDateFormat("ddMMyyyyHHmmssSSS", Locale.ENGLISH);
 		String timestampParameter = format.format(new Date());
