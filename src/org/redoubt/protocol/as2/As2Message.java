@@ -5,16 +5,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.activation.DataHandler;
-import javax.mail.Header;
-import javax.mail.Session;
 import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
 
 import org.apache.log4j.Logger;
 import org.redoubt.api.configuration.ICertificateManager;

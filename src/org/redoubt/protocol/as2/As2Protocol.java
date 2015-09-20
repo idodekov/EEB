@@ -13,7 +13,6 @@ import org.redoubt.transport.TransportConstants;
 import org.redoubt.util.FileSystemUtils;
 
 import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
 
 public class As2Protocol extends BaseProtocol {
     private static final Logger sLogger = Logger.getLogger(As2Protocol.class);
@@ -45,11 +44,8 @@ public class As2Protocol extends BaseProtocol {
         	As2Message message = new As2Message(settings);
         	MimeBodyPart data = message.generateMimeData(fullTarget);
             
-        	Path tempStorage = FileSystemUtils.createWorkFile();
-            FileSystemUtils.writeMimeMessageToFile(data, tempStorage);
-            
-            HttpClientUtils.sendPostRequest(settings, tempStorage, message.getHeaders());
-            FileSystemUtils.moveFile(tempStorage, workFile, true);
+            FileSystemUtils.writeMimeMessageToFile(data, workFile);
+            HttpClientUtils.sendPostRequest(settings, workFile, message.getHeaders());
         }  catch (Exception e) {
             sLogger.error("An error has occured while packaging As2 message. " + e.getMessage(), e);
             throw new ProtocolException(e.getMessage(), e);
