@@ -3,6 +3,7 @@ package org.redoubt.protocol.as2;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -23,7 +24,7 @@ import org.redoubt.application.VersionInformation;
 public class HttpClientUtils {
     private static final Logger sLogger = Logger.getLogger(HttpClientUtils.class);
     
-    public static void sendPostRequest(As2ProtocolSettings settings, Path file) throws Exception {
+    public static void sendPostRequest(As2ProtocolSettings settings, Path file, Map<String, String> headers) throws Exception {
         CloseableHttpClient httpclient = null;
         HttpPost httpPost = null;
         
@@ -47,6 +48,12 @@ public class HttpClientUtils {
             
             httpPost = new HttpPost(settings.getUrl());
             
+            if(headers != null) {
+            	for (Map.Entry<String, String> entry : headers.entrySet()) {
+            		httpPost.setHeader(entry.getKey(), entry.getValue());
+            	}
+            }
+            
 //            FileBody bin = new FileBody(file);
             ByteArrayEntity entity=new ByteArrayEntity(Files.readAllBytes(file));
 //            HttpEntity reqEntity = MultipartEntityBuilder.create()
@@ -54,9 +61,6 @@ public class HttpClientUtils {
 //                    .build();
 //            
             httpPost.setEntity(entity);
-            
-            httpPost.setHeader("Connection", "close, TE");
-            httpPost.setHeader("User-Agent", VersionInformation.APP_NAME + " " + VersionInformation.APP_VERSION);
             
             ResponseHandler<String> responseHandler = new ResponseHandler<String>() {
     

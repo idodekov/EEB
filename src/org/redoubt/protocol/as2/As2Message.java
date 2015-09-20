@@ -5,9 +5,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.activation.DataHandler;
+import javax.mail.Header;
 import javax.mail.Session;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
@@ -16,6 +20,7 @@ import org.apache.log4j.Logger;
 import org.redoubt.api.configuration.ICertificateManager;
 import org.redoubt.api.configuration.ICryptoHelper;
 import org.redoubt.api.factory.Factory;
+import org.redoubt.application.VersionInformation;
 
 public class As2Message {
 	private static final Logger sLogger = Logger.getLogger(As2Message.class);
@@ -33,12 +38,16 @@ public class As2Message {
 	private String encryptCertAlias;
 	private String compressionAlgorithm;
 	
+	private Map<String, String> headers;
+	
 	public As2Message() {
 		data = new MimeBodyPart();
+		headers = new HashMap<String, String>();
 	}
 	
 	public As2Message(As2ProtocolSettings settings) {
 		data = new MimeBodyPart();
+		headers = new HashMap<String, String>();
 		
 		fromAddress= settings.getFrom();
 		toAddress = settings.getTo();
@@ -55,7 +64,7 @@ public class As2Message {
         compressionAlgorithm = settings.getCompressionAlgorithm();
 	}
 	
-	public MimeMessage generateMimeData(String payload) throws Exception {
+	public MimeBodyPart generateMimeData(String payload) throws Exception {
 		sLogger.debug("Generating MIME data...");
 		Path workFile = Paths.get(payload);
         
@@ -67,17 +76,17 @@ public class As2Message {
 
 		secure();
         
-        Properties props = System.getProperties();
-        Session session = Session.getDefaultInstance(props, null);
-
-        MimeMessage body = new MimeMessage(session);
-        body.setHeader(As2HeaderDictionary.AS2_FROM, fromAddress);
-        body.setHeader(As2HeaderDictionary.AS2_TO, toAddress);
-        body.setHeader(As2HeaderDictionary.AS2_VERSION, As2HeaderDictionary.AS2_VERSION_1_1);
+		String contentType = normalizeContentType(data.getContentType());
+        headers.put(As2HeaderDictionary.CONTENT_TYPE, contentType);
+        headers.put(As2HeaderDictionary.AS2_FROM, fromAddress);
+        headers.put(As2HeaderDictionary.AS2_TO, toAddress);
+        headers.put(As2HeaderDictionary.AS2_VERSION, As2HeaderDictionary.AS2_VERSION_1_1);
+        headers.put(As2HeaderDictionary.CONNECTION, "close, TE");
+        headers.put(As2HeaderDictionary.USER_AGENT, VersionInformation.APP_NAME + " " + VersionInformation.APP_VERSION);
+        headers.put(As2HeaderDictionary.ACCEPT_ENCODING, "gzip,deflate");
+        headers.put(As2HeaderDictionary.MIME_VERSION, As2HeaderDictionary.MIME_VERSION_1_0);
         
-        body.setContent(data.getContent(), data.getContentType());
-        body.saveChanges();
-        return body;
+        return data;
 	}
 	
 	public void secure() throws Exception {
@@ -110,6 +119,14 @@ public class As2Message {
         }
     }
 	
+	private String normalizeContentType(String contentType) {
+		return contentType.replaceAll("(\r\n)|(\t)", "");
+	}
+	
+	public Map<String, String> getHeaders() {
+		return headers;
+	}
+
 	public String getToAddress() {
 		return toAddress;
 	}

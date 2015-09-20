@@ -10,6 +10,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.UUID;
 
 import javax.mail.MessagingException;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.log4j.Logger;
@@ -89,11 +90,8 @@ public class FileSystemUtils {
 		}
     }
     
-    public static void writeMimeMessageToFile(MimeMessage body, Path file) throws IOException, MessagingException {
-    	OutputStream fos = Files.newOutputStream(file, StandardOpenOption.CREATE_NEW);
-        body.writeTo(fos);
-        fos.flush();
-        fos.close();
+    public static void writeMimeMessageToFile(MimeBodyPart data, Path file) throws IOException, MessagingException {
+    	Files.copy(data.getInputStream(), file);
     }
     
     public static boolean verifyFolderPermissions(Path folder) {
