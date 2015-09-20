@@ -6,6 +6,11 @@
 			<Setting name="from">beta</Setting>
 			<Setting name="to">alpha</Setting>
 			<Setting name="productionFolder">F:\</Setting>
+			<Setting name="sign">true</Setting>
+			<Setting name="signCertAlias">sign1</Setting>
+			<Setting name="encrypt">true</Setting>
+			<Setting name="encryptCertAlias">encrypt1</Setting>
+			<Setting name="encryptCertKeyPassword">redoubt</Setting>
 		</Protocol>
 		<Setting name="name">AS2 HTTP server</Setting>
 		<Setting name="port">4080</Setting>

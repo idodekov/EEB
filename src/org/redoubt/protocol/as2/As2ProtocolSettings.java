@@ -20,6 +20,7 @@ public class As2ProtocolSettings extends SettingsHolder implements IProtocolSett
 		put(As2ProtocolSettingsKeyring.SIGN_CERT_ALIAS, "");
 		put(As2ProtocolSettingsKeyring.ENCRYPT_CERT_ALIAS, "");
 		put(As2ProtocolSettingsKeyring.SIGN_DIGEST_ALGORITHM, "sha1");
+		put(As2ProtocolSettingsKeyring.ENCRYPT_CERT_KEY_PASSWORD, "");
 		put(As2ProtocolSettingsKeyring.ENCRYPT_ALGORITHM, "3des");
 		put(As2ProtocolSettingsKeyring.COMPRESS, Boolean.toString(false));
 		put(As2ProtocolSettingsKeyring.COMPRESS_ALGORITHM, "zlib");
@@ -93,6 +94,14 @@ public class As2ProtocolSettings extends SettingsHolder implements IProtocolSett
     
     public void setEncryptCertAlias(String encryptCertAlias) {
         put(As2ProtocolSettingsKeyring.ENCRYPT_CERT_ALIAS, encryptCertAlias);
+    }
+    
+    public String getEncryptCertKeyPassword() {
+        return (String) get(As2ProtocolSettingsKeyring.ENCRYPT_CERT_KEY_PASSWORD);
+    }
+    
+    public void setEncryptCertKeyPassword(String encryptCertKeyPassword) {
+        put(As2ProtocolSettingsKeyring.ENCRYPT_CERT_KEY_PASSWORD, encryptCertKeyPassword);
     }
     
     public String getEncryptAlgorithm() {
@@ -173,6 +182,7 @@ public class As2ProtocolSettings extends SettingsHolder implements IProtocolSett
         public static final String SIGN_DIGEST_ALGORITHM = "signDigestAlgorithm";
         public static final String ENCRYPT = "encrypt";
         public static final String ENCRYPT_CERT_ALIAS = "encryptCertAlias";
+        public static final String ENCRYPT_CERT_KEY_PASSWORD = "encryptCertKeyPassword";
         public static final String ENCRYPT_ALGORITHM = "encryptAlgorithm";
         public static final String COMPRESS = "compress";
         public static final String COMPRESS_ALGORITHM = "compressAlgorithm";
