@@ -5,8 +5,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
 
 import javax.activation.DataHandler;
 import javax.mail.internet.MimeBodyPart;
@@ -80,6 +83,8 @@ public class As2Message {
         headers.put(As2HeaderDictionary.USER_AGENT, VersionInformation.APP_NAME + " " + VersionInformation.APP_VERSION);
         headers.put(As2HeaderDictionary.ACCEPT_ENCODING, "gzip,deflate");
         headers.put(As2HeaderDictionary.MIME_VERSION, As2HeaderDictionary.MIME_VERSION_1_0);
+        headers.put(As2HeaderDictionary.MIME_VERSION, As2HeaderDictionary.MIME_VERSION_1_0);
+        headers.put(As2HeaderDictionary.DATE, createTimestamp());
         
         return data;
 	}
@@ -113,6 +118,12 @@ public class As2Message {
             }
         }
     }
+	
+	private String createTimestamp() {
+		SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyy HH:mm:ss zzz");
+		format.setTimeZone(TimeZone.getTimeZone("GMT"));
+		return format.format(new Date());
+	}
 	
 	private String normalizeContentType(String contentType) {
 		return contentType.replaceAll("(\r\n)|(\t)", "");

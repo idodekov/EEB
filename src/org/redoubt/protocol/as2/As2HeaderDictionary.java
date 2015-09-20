@@ -12,6 +12,7 @@ public class As2HeaderDictionary {
     public static final String USER_AGENT = "User-Agent";
     public static final String ACCEPT_ENCODING = "Accept-Encoding";
     public static final String MIME_VERSION = "MIME-Version";
+    public static final String DATE = "Date";
     
     public static final String MIME_TYPE_APPLICATION_OCTET_STREAM = "application/octet-stream";
     public static final String TRANSFER_ENCODING_BINARY = "binary";
