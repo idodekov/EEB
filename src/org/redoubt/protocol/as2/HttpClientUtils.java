@@ -19,7 +19,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
-import org.redoubt.application.VersionInformation;
 
 public class HttpClientUtils {
     private static final Logger sLogger = Logger.getLogger(HttpClientUtils.class);
@@ -54,12 +53,7 @@ public class HttpClientUtils {
             	}
             }
             
-//            FileBody bin = new FileBody(file);
             ByteArrayEntity entity=new ByteArrayEntity(Files.readAllBytes(file));
-//            HttpEntity reqEntity = MultipartEntityBuilder.create()
-//                    .addPart("bin", bin)
-//                    .build();
-//            
             httpPost.setEntity(entity);
             
             ResponseHandler<String> responseHandler = new ResponseHandler<String>() {

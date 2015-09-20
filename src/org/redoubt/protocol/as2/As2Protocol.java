@@ -1,9 +1,12 @@
 package org.redoubt.protocol.as2;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
+
+import javax.activation.DataHandler;
+import javax.mail.internet.MimeBodyPart;
 
 import org.apache.log4j.Logger;
 import org.redoubt.api.protocol.TransferContext;
@@ -12,23 +15,34 @@ import org.redoubt.protocol.ProtocolException;
 import org.redoubt.transport.TransportConstants;
 import org.redoubt.util.FileSystemUtils;
 
-import javax.mail.internet.MimeBodyPart;
-
 public class As2Protocol extends BaseProtocol {
     private static final Logger sLogger = Logger.getLogger(As2Protocol.class);
 
     @Override
     public void receive(TransferContext context) throws ProtocolException {
         As2ProtocolSettings settings = (As2ProtocolSettings) getSettings();
-        
-        Path productionFolder = settings.getProductionFolder();
-        String fullTarget = (String) context.get(TransportConstants.CONTEXT_FULL_TARGET);
-        Path destination = Paths.get(fullTarget);
-        
         try {
-            Files.copy(destination, Paths.get(productionFolder.toString(), destination.getFileName().toString()));
-        } catch (IOException e) {
-            sLogger.error("An error has occured while copying destination file [" + destination.toString() + "].", e);
+	        Path productionFolder = settings.getProductionFolder();
+	        String fullTarget = (String) context.get(TransportConstants.CONTEXT_FULL_TARGET);
+	        Path workFile = Paths.get(fullTarget);
+	        
+	        FileSystemUtils.checkAs2SizeRestrictions(workFile);
+	        
+	        MimeBodyPart data = new MimeBodyPart();
+	        data.setDataHandler(new DataHandler(Files.readAllBytes(workFile), As2HeaderDictionary.MIME_TYPE_APPLICATION_OCTET_STREAM));
+	        
+	        @SuppressWarnings("unchecked")
+			Map<String,String> headersMap = (Map<String, String>) context.get(TransportConstants.CONTEXT_HEADER_MAP);
+	        
+	        for (Map.Entry<String, String> entry : headersMap.entrySet()) {
+	        	data.setHeader(entry.getKey(), entry.getValue());
+	        }
+	        
+	        Path productionFile = Paths.get(productionFolder.toString(), workFile.getFileName().toString());
+	        data.writeTo(Files.newOutputStream(productionFile));
+        } catch (Exception e) {
+            sLogger.error("An error has occured while unpackaging As2 message. " + e.getMessage(), e);
+            throw new ProtocolException(e.getMessage(), e);
         }
     }
 
@@ -42,9 +56,9 @@ public class As2Protocol extends BaseProtocol {
         	FileSystemUtils.checkAs2SizeRestrictions(workFile);
         	
         	As2Message message = new As2Message(settings);
-        	MimeBodyPart data = message.generateMimeData(fullTarget);
+        	message.generateMimeData(fullTarget);
+        	message.writeMimeDataToFile(workFile);
             
-            FileSystemUtils.writeMimeMessageToFile(data, workFile);
             HttpClientUtils.sendPostRequest(settings, workFile, message.getHeaders());
         }  catch (Exception e) {
             sLogger.error("An error has occured while packaging As2 message. " + e.getMessage(), e);

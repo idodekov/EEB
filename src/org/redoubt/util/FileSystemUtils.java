@@ -87,10 +87,6 @@ public class FileSystemUtils {
 		}
     }
     
-    public static void writeMimeMessageToFile(MimeBodyPart data, Path file) throws IOException, MessagingException {
-    	Files.copy(data.getInputStream(), file, StandardCopyOption.REPLACE_EXISTING);
-    }
-    
     public static boolean verifyFolderPermissions(Path folder) {
         if(!Files.exists(folder)) {
             return false;

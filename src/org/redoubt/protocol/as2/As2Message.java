@@ -1,14 +1,17 @@
 package org.redoubt.protocol.as2;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.activation.DataHandler;
+import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
 
 import org.apache.log4j.Logger;
@@ -122,6 +125,10 @@ public class As2Message {
                 data = cryptoHelper.encrypt(data, receiverCert, encryptAlgorithm);
             }
         }
+    }
+	
+	public void writeMimeDataToFile(Path file) throws IOException, MessagingException {
+    	Files.copy(data.getInputStream(), file, StandardCopyOption.REPLACE_EXISTING);
     }
 	
 	public String getMessageId() {

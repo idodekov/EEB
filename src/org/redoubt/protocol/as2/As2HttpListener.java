@@ -3,6 +3,9 @@ package org.redoubt.protocol.as2;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -46,9 +49,19 @@ public class As2HttpListener extends HttpServlet {
         TransferContext context = new TransferContext();
         context.put(TransportConstants.CONTEXT_FULL_TARGET, workFile.toString());
         
+        Map<String, String> headersMap = new HashMap<String, String>();
+        Enumeration<String> en = req.getHeaderNames();
+        while(en.hasMoreElements()) {
+        	String hdr = en.nextElement();
+        	headersMap.put(hdr, req.getHeader(hdr));
+        }
+        
+        context.put(TransportConstants.CONTEXT_HEADER_MAP, headersMap);
+        
         try {
             protocol.process(context);
         } catch (Exception e) {
+        	resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             sLogger.error("An error has occured while processing inbound AS2 message. " + e.getMessage(), e);
             throw new IOException(e.getMessage(), e);
         } finally {
