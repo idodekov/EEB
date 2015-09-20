@@ -5,11 +5,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TimeZone;
 
 import javax.activation.DataHandler;
 import javax.mail.internet.MimeBodyPart;
@@ -19,6 +16,7 @@ import org.redoubt.api.configuration.ICertificateManager;
 import org.redoubt.api.configuration.ICryptoHelper;
 import org.redoubt.api.factory.Factory;
 import org.redoubt.application.VersionInformation;
+import org.redoubt.util.Utils;
 
 public class As2Message {
 	private static final Logger sLogger = Logger.getLogger(As2Message.class);
@@ -37,6 +35,8 @@ public class As2Message {
 	private String compressionAlgorithm;
 	
 	private Map<String, String> headers;
+	
+	private String messageId;
 	
 	public As2Message() {
 		data = new MimeBodyPart();
@@ -65,6 +65,8 @@ public class As2Message {
 	public MimeBodyPart generateMimeData(String payload) throws Exception {
 		sLogger.debug("Generating MIME data...");
 		Path workFile = Paths.get(payload);
+		
+		messageId = Utils.generateMessageID(fromAddress);
         
         // TODO: add support for large files
 		data.setDataHandler(new DataHandler(Files.readAllBytes(workFile), As2HeaderDictionary.MIME_TYPE_APPLICATION_OCTET_STREAM));
@@ -74,7 +76,7 @@ public class As2Message {
 
 		secure();
         
-		String contentType = normalizeContentType(data.getContentType());
+		String contentType = Utils.normalizeContentType(data.getContentType());
         headers.put(As2HeaderDictionary.CONTENT_TYPE, contentType);
         headers.put(As2HeaderDictionary.AS2_FROM, fromAddress);
         headers.put(As2HeaderDictionary.AS2_TO, toAddress);
@@ -84,7 +86,8 @@ public class As2Message {
         headers.put(As2HeaderDictionary.ACCEPT_ENCODING, "gzip,deflate");
         headers.put(As2HeaderDictionary.MIME_VERSION, As2HeaderDictionary.MIME_VERSION_1_0);
         headers.put(As2HeaderDictionary.MIME_VERSION, As2HeaderDictionary.MIME_VERSION_1_0);
-        headers.put(As2HeaderDictionary.DATE, createTimestamp());
+        headers.put(As2HeaderDictionary.DATE, Utils.createTimestamp());
+        headers.put(As2HeaderDictionary.MESSAGE_ID, messageId);
         
         return data;
 	}
@@ -119,16 +122,10 @@ public class As2Message {
         }
     }
 	
-	private String createTimestamp() {
-		SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyy HH:mm:ss zzz");
-		format.setTimeZone(TimeZone.getTimeZone("GMT"));
-		return format.format(new Date());
+	public String getMessageId() {
+		return messageId;
 	}
-	
-	private String normalizeContentType(String contentType) {
-		return contentType.replaceAll("(\r\n)|(\t)", "");
-	}
-	
+
 	public Map<String, String> getHeaders() {
 		return headers;
 	}
