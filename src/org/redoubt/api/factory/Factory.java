@@ -12,6 +12,9 @@ import org.redoubt.api.protocol.IProtocolManager;
 import org.redoubt.api.protocol.IProtocolSettings;
 import org.redoubt.api.transport.ITransport;
 import org.redoubt.api.transport.ITransportSettings;
+import org.redoubt.application.configuration.BaseParty;
+import org.redoubt.application.configuration.LocalParty;
+import org.redoubt.application.configuration.RemoteParty;
 import org.redoubt.application.configuration.XmlConfigurationManager;
 import org.redoubt.application.configuration.XmlPartyManager;
 import org.redoubt.cert.BCCryptoHelper;
@@ -57,11 +60,11 @@ public class Factory {
 		return sInstance;
 	}
 	
-	public IPartyManager getPartyManagerr() {
-		return getPartyManagerr(FactoryConstants.PARTY_MANAGER_XML);
+	public IPartyManager getPartyManager() {
+		return getPartyManager(FactoryConstants.PARTY_MANAGER_XML);
 	}
 	
-	public IPartyManager getPartyManagerr(String type) {
+	public IPartyManager getPartyManager(String type) {
 		if(sPartyManager == null) {
             synchronized(SINGLETON_LOCK) {
                 if(sPartyManager == null) {
@@ -244,5 +247,15 @@ public class Factory {
         }
 	    
 	    return null;
+	}
+	
+	public BaseParty getParty(String type) {
+		if(FactoryConstants.PARTY_TYPE_LOCAL.equals(type)) {
+			return new LocalParty();
+		} else if(FactoryConstants.PARTY_TYPE_REMOTE.equals(type)){
+			return new RemoteParty();
+		}
+		
+		return null;
 	}
 }

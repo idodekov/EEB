@@ -13,7 +13,7 @@
 		<Setting name="compressAlgorithm">zlib</Setting>
 	</Party>
 	<Party type="remote">
-		<Setting name="id">beta</Setting>
+		<Setting name="partyId">beta</Setting>
 		<Setting name="signCertAlias">sign1</Setting>
 		<Setting name="encryptCertAlias">encrypt1</Setting>
 	</Party>

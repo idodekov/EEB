@@ -9,12 +9,11 @@ public class BaseParty extends HashMap<String, Object> implements IParty {
 
 	@Override
 	public boolean isLocal() {
-		return Boolean.parseBoolean((String) get(PartySettingsKeyring.IS_LOCAL));
-	}
-
-	@Override
-	public void setLocal(boolean isLocal) {
-		put(PartySettingsKeyring.IS_LOCAL, Boolean.toString(isLocal));
+		if(this instanceof LocalParty) {
+			return true;
+		}
+		
+		return false;
 	}
 
 	@Override
@@ -47,7 +46,6 @@ public class BaseParty extends HashMap<String, Object> implements IParty {
         public static final String SIGN_CERT_ALIAS = "signCertAlias";
         public static final String ENCRYPT_CERT_ALIAS = "encryptCertAlias";
         public static final String PARTY_ID = "partyId";
-        public static final String IS_LOCAL = "isLocal";
     }
 	
 }
