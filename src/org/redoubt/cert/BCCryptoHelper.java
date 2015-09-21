@@ -196,7 +196,6 @@ public class BCCryptoHelper implements ICryptoHelper {
     }
 
     public MimeBodyPart sign(MimeBodyPart part, X509Certificate cert, PrivateKey key, String digest) throws Exception {
-        PrivateKey privKey = castKey(key);
         String digestAlg = null;
         
         if(DIGEST_SHA1.equals(digest)) {
@@ -228,7 +227,7 @@ public class BCCryptoHelper implements ICryptoHelper {
         SMIMESignedGenerator gen = new SMIMESignedGenerator();
         gen.setContentTransferEncoding(As2HeaderDictionary.TRANSFER_ENCODING_BINARY);
         gen.addSignerInfoGenerator(new JcaSimpleSignerInfoGeneratorBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).
-        		setSignedAttributeGenerator(new AttributeTable(signedAttrs)).build(digestAlg, privKey, cert));
+        		setSignedAttributeGenerator(new AttributeTable(signedAttrs)).build(digestAlg, key, cert));
         gen.addCertificates(certs);
         MimeMultipart mm = gen.generate(part);
 
@@ -239,7 +238,8 @@ public class BCCryptoHelper implements ICryptoHelper {
         return tempBody;
     }
 
-    public MimeBodyPart verify(MimeBodyPart part) throws Exception {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	public MimeBodyPart verify(MimeBodyPart part) throws Exception {
         // Make sure the data is signed
         if (!isSigned(part)) {
             throw new GeneralSecurityException("Content-Type indicates data isn't signed");
@@ -268,73 +268,6 @@ public class BCCryptoHelper implements ICryptoHelper {
         
         SMIMESigned signedPart = new SMIMESigned(mainParts);
         return signedPart.getContent();
-        
-        
-//        MimeMultipart mainParts = (MimeMultipart) part.getContent();
-//
-//        SMIMESigned signedPart = new SMIMESigned(mainParts);
-//
-//        Iterator signerIt = signedPart.getSignerInfos().getSigners().iterator();
-//        SignerInformation signer;
-//
-//        while (signerIt.hasNext()) {
-//            signer = (SignerInformation) signerIt.next();
-//
-//            if (!signer.verify(cert, BouncyCastleProvider.PROVIDER_NAME)) {
-//                throw new SignatureException("Verification failed");
-//            }
-//        }
-//
-//        return signedPart.getContent();
-    }
-
-    protected PrivateKey castKey(Key key) throws GeneralSecurityException {
-        if (!(key instanceof PrivateKey)) {
-            throw new GeneralSecurityException("Key must implement PrivateKey interface");
-        }
-
-        return (PrivateKey) key;
-    }
-    
-    protected String convertAlgorithm(String algorithm, boolean toBC)
-            throws NoSuchAlgorithmException {
-        if (algorithm == null) {
-            throw new NoSuchAlgorithmException("Algorithm is null");
-        }
-
-        if (toBC) {
-            if (algorithm.equalsIgnoreCase(DIGEST_MD5)) {
-                return SMIMESignedGenerator.DIGEST_MD5;
-            } else if (algorithm.equalsIgnoreCase(DIGEST_SHA1)) {
-                return SMIMESignedGenerator.DIGEST_SHA1;
-            } else if (algorithm.equalsIgnoreCase(CRYPT_3DES)) {
-                return SMIMEEnvelopedGenerator.DES_EDE3_CBC;
-            } else if (algorithm.equalsIgnoreCase(CRYPT_CAST5)) {
-                return SMIMEEnvelopedGenerator.CAST5_CBC;
-            } else if (algorithm.equalsIgnoreCase(CRYPT_IDEA)) {
-                return SMIMEEnvelopedGenerator.IDEA_CBC;
-            } else if (algorithm.equalsIgnoreCase(CRYPT_RC2)) {
-                return SMIMEEnvelopedGenerator.RC2_CBC;
-            } else {
-                throw new NoSuchAlgorithmException("Unknown algorithm: " + algorithm);
-            }
-        }
-        if (algorithm.equalsIgnoreCase(SMIMESignedGenerator.DIGEST_MD5)) {
-            return DIGEST_MD5;
-        } else if (algorithm.equalsIgnoreCase(SMIMESignedGenerator.DIGEST_SHA1)) {
-            return DIGEST_SHA1;
-        } else if (algorithm.equalsIgnoreCase(SMIMEEnvelopedGenerator.CAST5_CBC)) {
-            return CRYPT_CAST5;
-        } else if (algorithm.equalsIgnoreCase(SMIMEEnvelopedGenerator.DES_EDE3_CBC)) {
-            return CRYPT_3DES;
-        } else if (algorithm.equalsIgnoreCase(SMIMEEnvelopedGenerator.IDEA_CBC)) {
-            return CRYPT_IDEA;
-        } else if (algorithm.equalsIgnoreCase(SMIMEEnvelopedGenerator.RC2_CBC)) {
-            return CRYPT_RC2;
-        } else {
-            throw new NoSuchAlgorithmException("Unknown algorithm: " + algorithm);
-        }
-
     }
 
     protected InputStream trimCRLFPrefix(byte[] data) {
