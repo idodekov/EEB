@@ -20,8 +20,10 @@ import javax.mail.util.ByteArrayDataSource;
 import org.apache.log4j.Logger;
 import org.redoubt.api.configuration.ICertificateManager;
 import org.redoubt.api.configuration.ICryptoHelper;
+import org.redoubt.api.configuration.IPartyManager;
 import org.redoubt.api.factory.Factory;
 import org.redoubt.application.VersionInformation;
+import org.redoubt.application.configuration.Party;
 import org.redoubt.protocol.ProtocolException;
 import org.redoubt.util.Utils;
 
@@ -45,6 +47,9 @@ public class As2Message {
 	private Map<String, String> headers;
 	
 	private String messageId;
+	
+	private Party localParty;
+	private Party remoteParty;
 	
 	public As2Message() {
 		data = new MimeBodyPart();
@@ -86,16 +91,28 @@ public class As2Message {
 		fromAddress= settings.getFrom();
 		toAddress = settings.getTo();
 		
-		encrypt = settings.isEncryptionEnabled();
-        sign = settings.isSigningEnabled();
-        compress = settings.isCompressionEnabled();
+		resolveParties(toAddress, fromAddress);
+		
+		encrypt = localParty.isEncryptionEnabled();
+        sign = localParty.isSigningEnabled();
+        compress = localParty.isCompressionEnabled();
         
-        signCertAlias = settings.getSignCertAlias();
-        signCertKeyPassword = settings.getSignCertKeyPassword();
-        signDigestAlgorithm = settings.getSignDigestAlgorithm();
-        encryptAlgorithm = settings.getEncryptAlgorithm();
-        encryptCertAlias = settings.getEncryptCertAlias();
-        compressionAlgorithm = settings.getCompressionAlgorithm();
+        if(settings.isEncryptionEnforced() && !encrypt) {
+        	throw new ProtocolException("Encryption for transport is enforced, however party with id [" + 
+        			localParty.getPartyId() + "] doesn't have encryption enabled. Message will be rejected.");
+        }
+        
+        if(settings.isSigningEnforced() && !sign) {
+        	throw new ProtocolException("Signing for transport is enforced, however party with id [" + 
+        			localParty.getPartyId() + "] doesn't have signing enabled. Message will be rejected.");
+        }
+        
+        signCertAlias = localParty.getSignCertAlias();
+        signCertKeyPassword = localParty.getSignCertKeyPassword();
+        signDigestAlgorithm = localParty.getSignDigestAlgorithm();
+        encryptAlgorithm = localParty.getEncryptAlgorithm();
+        encryptCertAlias = remoteParty.getEncryptCertAlias();
+        compressionAlgorithm = localParty.getCompressionAlgorithm();
         
 		messageId = Utils.generateMessageID(fromAddress);
         
@@ -166,14 +183,17 @@ public class As2Message {
 			throw new ProtocolException(As2HeaderDictionary.AS2_TO + " header is empty. Unknown sender - rejecting the message.");
 		}
 		
-		encrypt = settings.isEncryptionEnabled();
-        sign = settings.isSigningEnabled();
+		if(fromAddress.equalsIgnoreCase(toAddress)) {
+			throw new ProtocolException(As2HeaderDictionary.AS2_TO + " header can't be equal to [" + As2HeaderDictionary.AS2_FROM + "].");
+		}
+		
+		resolveParties(fromAddress, toAddress);
+		
+        signCertAlias = remoteParty.getSignCertAlias();
+        encryptCertAlias = localParty.getEncryptCertAlias();
+        encryptCertKeyPassword = localParty.getEncryptCertKeyPassword();
         
-        signCertAlias = settings.getSignCertAlias();
-        encryptCertAlias = settings.getEncryptCertAlias();
-        encryptCertKeyPassword = settings.getEncryptCertKeyPassword();
-        
-        decryptAndVerify();
+        decryptAndVerify(settings.isEncryptionEnforced(), settings.isSigningEnforced());
 		
 		sLogger.debug("As2 message successfully unpackaged.");
 		
@@ -181,7 +201,7 @@ public class As2Message {
 		
 	}
 	
-	protected void decryptAndVerify() throws Exception {
+	protected void decryptAndVerify(boolean encryptionEnforced, boolean signingEnforced) throws Exception {
     	ICertificateManager certificateManager = Factory.getInstance().getCertificateManager();
     	ICryptoHelper cryptoHelper = Factory.getInstance().getCryptoHelper();
     	
@@ -193,7 +213,7 @@ public class As2Message {
             data = cryptoHelper.decrypt(data, receiverCert, receiverKey);
             sLogger.debug("Message is decrypted.");
         } else {
-        	if(encrypt) {
+        	if(encryptionEnforced) {
         		//Encryption is enforced
         		throw new ProtocolException("Encryption is enabled, however the message doesn't appear to be encrypted. Will reject it.");
         	}
@@ -207,7 +227,7 @@ public class As2Message {
    			data = cryptoHelper.verify(data, senderCert);
    			sLogger.debug("Signature verified.");
         } else {
-        	if(sign) {
+        	if(signingEnforced) {
         		//Signing is enforced
         		throw new ProtocolException("Signing is enabled, however the message doesn't appear to be signed. Will reject it.");
         	}
@@ -219,6 +239,23 @@ public class As2Message {
    			sLogger.debug("Message is decompressed.");
    		}
     }
+	
+	protected void resolveParties(String remotePartyId, String localPartyId) throws ProtocolException {
+		if(remotePartyId == null || localPartyId == null) {
+			throw new ProtocolException("Local or Remote party is unknown.");
+		}
+		
+		IPartyManager partyManager = Factory.getInstance().getPartyManager();
+		localParty = partyManager.getPartyById(localPartyId);
+		if(localParty == null) {
+			throw new ProtocolException("There's no local party for party id [" + localPartyId + "].");
+		}
+		
+		remoteParty = partyManager.getPartyById(remotePartyId);
+		if(remoteParty == null) {
+			throw new ProtocolException("There's no remote party for party id [" + remotePartyId + "].");
+		}
+	}
 	
 	public void writeMimeDataToFile(Path file) throws IOException, MessagingException {
     	Files.copy(data.getInputStream(), file, StandardCopyOption.REPLACE_EXISTING);

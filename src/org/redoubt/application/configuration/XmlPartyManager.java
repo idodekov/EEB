@@ -7,6 +7,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
 import org.redoubt.api.factory.Factory;
+import org.redoubt.api.factory.FactoryConstants;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -18,7 +19,6 @@ public class XmlPartyManager extends BasePartyManager {
 	private static final String XML_ELEMENT_PARTY = "Party";
 	private static final String XML_ELEMENT_SETTING = "Setting";
 	private static final String XML_ATTRIBUTE_NAME = "name";
-	private static final String XML_ATTRIBUTE_TYPE = "type";
     
 	@Override
 	public void loadParties() {
@@ -41,10 +41,8 @@ public class XmlPartyManager extends BasePartyManager {
 				
 				if (nNode.getNodeType() == Node.ELEMENT_NODE) {
 					Element eElement = (Element) nNode;
-					String partyType = eElement.getAttribute(XML_ATTRIBUTE_TYPE);
-					sLogger.debug("Party type is: " + partyType + ".");
 					
-					BaseParty party = Factory.getInstance().getParty(partyType);
+					Party party = Factory.getInstance().getParty(FactoryConstants.PARTY_TYPE_BASE);
 					
 					NodeList settingsList =  eElement.getChildNodes();
 					for (int i = 0; i < settingsList.getLength(); i++) {
@@ -68,7 +66,7 @@ public class XmlPartyManager extends BasePartyManager {
 					}
 					
 					addParty(party);
-					sLogger.info("Party with ID [" + party.getPartyId() + "] and type [" + partyType + "] was created.");
+					sLogger.info("Party with ID [" + party.getPartyId() + "] was created.");
 				}
 				
 			}

@@ -11,6 +11,7 @@ public class FactoryConstants {
 	
 	public static final String CRYPTO_HELPER_BC = "BC";
 	
+	public static final String PARTY_TYPE_BASE = "base";
 	public static final String PARTY_TYPE_LOCAL = "local";
 	public static final String PARTY_TYPE_REMOTE = "remote";
 }

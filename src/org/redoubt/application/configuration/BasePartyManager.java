@@ -16,28 +16,8 @@ public abstract class BasePartyManager implements IPartyManager {
 	@Override
 	public abstract void loadParties();
 
-	public IParty getPartyById(String partyId) {
-		return parties.get(partyId);
-	}
-	
-	public LocalParty getLocalPartyById(String partyId) {
-		IParty party = parties.get(partyId);
-		
-		if(party.isLocal()) {
-			return (LocalParty) party;
-		}
-		
-		return null;
-	}
-	
-	public RemoteParty getRemotePartyById(String partyId) {
-		IParty party = parties.get(partyId);
-		
-		if(!party.isLocal()) {
-			return (RemoteParty) party;
-		}
-		
-		return null;
+	public Party getPartyById(String partyId) {
+		return (Party) parties.get(partyId);
 	}
 	
 	public void addParty(IParty party) {

@@ -15,7 +15,7 @@ public class Application {
 		sLogger.info("Starting " + VersionInformation.APP_NAME + " [" + VersionInformation.APP_VERSION + "]...");
 		
 		IServerConfigurationManager configurationManager = Factory.getInstance().getServerConfigurationManager();
-		Factory.getInstance().getPartyManager();
+
 		IProtocolManager protocolManager = Factory.getInstance().getProtocolManager();
 		
 		protocolManager.startTransports();
