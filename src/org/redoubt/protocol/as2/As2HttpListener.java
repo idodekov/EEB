@@ -4,9 +4,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
 
+import javax.mail.internet.InternetHeaders;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -49,11 +48,11 @@ public class As2HttpListener extends HttpServlet {
         TransferContext context = new TransferContext();
         context.put(TransportConstants.CONTEXT_FULL_TARGET, workFile.toString());
         
-        Map<String, String> headersMap = new HashMap<String, String>();
+        InternetHeaders headersMap = new InternetHeaders();
         Enumeration<String> en = req.getHeaderNames();
         while(en.hasMoreElements()) {
         	String hdr = en.nextElement();
-        	headersMap.put(hdr, req.getHeader(hdr));
+        	headersMap.setHeader(hdr, req.getHeader(hdr));
         }
         
         context.put(TransportConstants.CONTEXT_HEADER_MAP, headersMap);

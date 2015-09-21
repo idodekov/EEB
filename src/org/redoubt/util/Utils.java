@@ -74,7 +74,9 @@ public class Utils {
 	}
 	
 	public static String normalizeContentType(String contentType) {
+		/* Fix SHA algorithm references in micalg value of content-type header */
 		contentType = contentType.replace("micalg=sha-", "micalg=sha");
+		/* Make sure content-type header is on a single line */
 		contentType = contentType.replaceAll("(\r\n)|(\t)", "");
 		return contentType;
 	}
