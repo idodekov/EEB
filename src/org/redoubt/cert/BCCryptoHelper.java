@@ -79,6 +79,21 @@ import org.redoubt.protocol.as2.As2HeaderDictionary;
 
 public class BCCryptoHelper implements ICryptoHelper {
 	
+	public void init() {
+        Security.addProvider(new BouncyCastleProvider());
+
+        MailcapCommandMap mc = (MailcapCommandMap) CommandMap.getDefaultCommandMap();
+        mc.addMailcap("application/pkcs7-signature;; x-java-content-handler=org.bouncycastle.mail.smime.handlers.pkcs7_signature");
+        mc.addMailcap("application/pkcs7-mime;; x-java-content-handler=org.bouncycastle.mail.smime.handlers.pkcs7_mime");
+        mc.addMailcap("application/x-pkcs7-signature;; x-java-content-handler=org.bouncycastle.mail.smime.handlers.x_pkcs7_signature");
+        mc.addMailcap("application/x-pkcs7-mime;; x-java-content-handler=org.bouncycastle.mail.smime.handlers.x_pkcs7_mime");
+        mc.addMailcap("multipart/signed;; x-java-content-handler=org.bouncycastle.mail.smime.handlers.multipart_signed");
+        CommandMap.setDefaultCommandMap(mc);
+    }
+
+    public void deinit() {
+    }
+	
     public boolean isEncrypted(MimeBodyPart part) throws MessagingException {
         ContentType contentType = new ContentType(part.getContentType());
         String baseType = contentType.getBaseType().toLowerCase();
@@ -167,14 +182,11 @@ public class BCCryptoHelper implements ICryptoHelper {
             throw new GeneralSecurityException("Certificate does not match part signature");
         }
         
-        MimeBodyPart res = SMIMEUtil.toMimeBodyPart(recipient.getContentStream(new JceKeyTransEnvelopedRecipient(key).setProvider("BC")));
+        MimeBodyPart res = SMIMEUtil.toMimeBodyPart(recipient.getContentStream(new JceKeyTransEnvelopedRecipient(key).setProvider(BouncyCastleProvider.PROVIDER_NAME)));
 
         return res;
     }
-
-    public void deinit() {
-    }
-
+    
     public MimeBodyPart encrypt(MimeBodyPart part, X509Certificate x509Cert, String algorithm) throws Exception {
         ASN1ObjectIdentifier encAlg = null;
         
@@ -196,18 +208,6 @@ public class BCCryptoHelper implements ICryptoHelper {
         MimeBodyPart encData = gen.generate(part, new JceCMSContentEncryptorBuilder(encAlg).setProvider(BouncyCastleProvider.PROVIDER_NAME).build());
         
         return encData;
-    }
-
-    public void init() {
-        Security.addProvider(new BouncyCastleProvider());
-
-        MailcapCommandMap mc = (MailcapCommandMap) CommandMap.getDefaultCommandMap();
-        mc.addMailcap("application/pkcs7-signature;; x-java-content-handler=org.bouncycastle.mail.smime.handlers.pkcs7_signature");
-        mc.addMailcap("application/pkcs7-mime;; x-java-content-handler=org.bouncycastle.mail.smime.handlers.pkcs7_mime");
-        mc.addMailcap("application/x-pkcs7-signature;; x-java-content-handler=org.bouncycastle.mail.smime.handlers.x_pkcs7_signature");
-        mc.addMailcap("application/x-pkcs7-mime;; x-java-content-handler=org.bouncycastle.mail.smime.handlers.x_pkcs7_mime");
-        mc.addMailcap("multipart/signed;; x-java-content-handler=org.bouncycastle.mail.smime.handlers.multipart_signed");
-        CommandMap.setDefaultCommandMap(mc);
     }
 
     public MimeBodyPart sign(MimeBodyPart part, X509Certificate cert, PrivateKey key, String digest) throws Exception {

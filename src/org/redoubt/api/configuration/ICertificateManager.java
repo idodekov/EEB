@@ -8,4 +8,6 @@ public interface ICertificateManager {
     String getKeystoreType();
     X509Certificate getX509Certificate(String alias);
     PrivateKey getPrivateKey(String alias, char[] password);
+    boolean checkCertificateValidity(X509Certificate cert) throws Exception;
+    boolean isSelfSigned(X509Certificate cert) throws Exception;
 }
