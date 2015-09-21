@@ -276,6 +276,10 @@ public class BCCryptoHelper implements ICryptoHelper {
             Iterator certIt = certCollection.iterator();
             X509Certificate resolvedCert = new JcaX509CertificateConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME).getCertificate((X509CertificateHolder)certIt.next());
             
+            if(!resolvedCert.equals(cert)) {
+            	throw new SignatureException("Message is signed with a certificate, that is not configured for this party!");
+            }
+            
             if (!signer.verify(new JcaSimpleSignerInfoVerifierBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(resolvedCert))) {
             	throw new SignatureException("Signature verification failed!");
             }
