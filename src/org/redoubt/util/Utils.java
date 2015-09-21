@@ -74,6 +74,8 @@ public class Utils {
 	}
 	
 	public static String normalizeContentType(String contentType) {
-		return contentType.replaceAll("(\r\n)|(\t)", "");
+		contentType = contentType.replace("micalg=sha-", "micalg=sha");
+		contentType = contentType.replaceAll("(\r\n)|(\t)", "");
+		return contentType;
 	}
 }
