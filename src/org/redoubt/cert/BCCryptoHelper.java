@@ -56,8 +56,10 @@ import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientId;
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
 import org.bouncycastle.cms.jcajce.ZlibCompressor;
+import org.bouncycastle.cms.jcajce.ZlibExpanderProvider;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.mail.smime.SMIMECompressedGenerator;
+import org.bouncycastle.mail.smime.SMIMECompressedParser;
 import org.bouncycastle.mail.smime.SMIMEEnveloped;
 import org.bouncycastle.mail.smime.SMIMEEnvelopedGenerator;
 import org.bouncycastle.mail.smime.SMIMEEnvelopedParser;
@@ -95,6 +97,19 @@ public class BCCryptoHelper implements ICryptoHelper {
         String baseType = contentType.getBaseType().toLowerCase();
 
         return baseType.equalsIgnoreCase("multipart/signed");
+    }
+    
+    public boolean isCompressed(MimeBodyPart part) throws MessagingException {
+        ContentType contentType = new ContentType(part.getContentType());
+        String baseType = contentType.getBaseType().toLowerCase();
+
+        if (baseType.equalsIgnoreCase("application/pkcs7-mime")) {
+            String smimeType = contentType.getParameter("smime-type");
+
+            return ((smimeType != null) && smimeType.equalsIgnoreCase("compressed-data"));
+        }
+
+        return false;
     }
 
     public String calculateMIC(MimeBodyPart part, String digest, boolean includeHeaders)
@@ -239,7 +254,7 @@ public class BCCryptoHelper implements ICryptoHelper {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-	public MimeBodyPart verify(MimeBodyPart part) throws Exception {
+	public MimeBodyPart verify(MimeBodyPart part, X509Certificate cert) throws Exception {
         // Make sure the data is signed
         if (!isSigned(part)) {
             throw new GeneralSecurityException("Content-Type indicates data isn't signed");
@@ -259,9 +274,9 @@ public class BCCryptoHelper implements ICryptoHelper {
             Collection certCollection = certs.getMatches(signer.getSID());
 
             Iterator certIt = certCollection.iterator();
-            X509Certificate cert = new JcaX509CertificateConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME).getCertificate((X509CertificateHolder)certIt.next());
+            X509Certificate resolvedCert = new JcaX509CertificateConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME).getCertificate((X509CertificateHolder)certIt.next());
             
-            if (!signer.verify(new JcaSimpleSignerInfoVerifierBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(cert))) {
+            if (!signer.verify(new JcaSimpleSignerInfoVerifierBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(resolvedCert))) {
             	throw new SignatureException("Signature verification failed!");
             }
         }
@@ -307,8 +322,9 @@ public class BCCryptoHelper implements ICryptoHelper {
 
 	@Override
 	public MimeBodyPart decompress(MimeBodyPart part) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+		SMIMECompressedParser parser = new SMIMECompressedParser(part);
+        MimeBodyPart res = SMIMEUtil.toMimeBodyPart(parser.getContent(new ZlibExpanderProvider()));
+        return res;
 	}
 
 }

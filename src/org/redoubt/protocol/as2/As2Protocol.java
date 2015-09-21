@@ -83,8 +83,8 @@ public class As2Protocol extends BaseProtocol {
    		if (cryptoHelper.isSigned(data)) {
    			sLogger.debug("Message is signed - will attempt to verify the signature.");
 	
-   			//X509Certificate senderCert = certificateManager.getX509Certificate(settings.getSignCertAlias());
-   			data = cryptoHelper.verify(data);
+   			X509Certificate senderCert = certificateManager.getX509Certificate(settings.getSignCertAlias());
+   			data = cryptoHelper.verify(data, senderCert);
    			sLogger.debug("Signature verified.");
         } else {
         	if(sign) {
@@ -93,7 +93,11 @@ public class As2Protocol extends BaseProtocol {
         	}
         }
    		
-   		//TODO: Check for compression
+   		if (cryptoHelper.isCompressed(data)) {
+   			sLogger.debug("Message is compressed - will attempt to decompress it.");
+   			data = cryptoHelper.decompress(data);
+   			sLogger.debug("Message is decompressed.");
+   		}
    		
    		return data;
     }
