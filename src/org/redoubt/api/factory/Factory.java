@@ -5,6 +5,7 @@ import javax.servlet.http.HttpServlet;
 import org.apache.log4j.Logger;
 import org.redoubt.api.configuration.ICertificateManager;
 import org.redoubt.api.configuration.ICryptoHelper;
+import org.redoubt.api.configuration.IPartyManager;
 import org.redoubt.api.configuration.IServerConfigurationManager;
 import org.redoubt.api.protocol.IProtocol;
 import org.redoubt.api.protocol.IProtocolManager;
@@ -12,6 +13,7 @@ import org.redoubt.api.protocol.IProtocolSettings;
 import org.redoubt.api.transport.ITransport;
 import org.redoubt.api.transport.ITransportSettings;
 import org.redoubt.application.configuration.XmlConfigurationManager;
+import org.redoubt.application.configuration.XmlPartyManager;
 import org.redoubt.cert.BCCryptoHelper;
 import org.redoubt.cert.JksCertificateManager;
 import org.redoubt.protocol.ProtocolException;
@@ -34,6 +36,7 @@ public class Factory {
 	private static IServerConfigurationManager sServerConfigurationManager;
 	private static ICertificateManager sCertificateManager;
 	private static ICryptoHelper sCryptoHelper;
+	private static IPartyManager sPartyManager;
 	private static final Object SINGLETON_LOCK = new Object();
 	
 	private static final Logger sLogger = Logger.getLogger(Factory.class);
@@ -52,6 +55,30 @@ public class Factory {
 		}
 		
 		return sInstance;
+	}
+	
+	public IPartyManager getPartyManagerr() {
+		return getPartyManagerr(FactoryConstants.PARTY_MANAGER_XML);
+	}
+	
+	public IPartyManager getPartyManagerr(String type) {
+		if(sPartyManager == null) {
+            synchronized(SINGLETON_LOCK) {
+                if(sPartyManager == null) {
+                	sLogger.info("Initializing PartyManager instance...");
+                    
+                    if(FactoryConstants.PARTY_MANAGER_XML.equals(type)) {
+                    	sPartyManager = new XmlPartyManager();
+                    }
+                    
+                    sPartyManager.loadParties();
+                    
+                    sLogger.info("PartyManager instance successfully initialized. Type is [" + type + "].");
+                }
+            }
+		}
+		
+		return sPartyManager;
 	}
 	
 	public ICryptoHelper getCryptoHelper() {

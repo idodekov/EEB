@@ -1,0 +1,20 @@
+<Parties>
+	<Party type="local">
+		<Setting name="partyId">alpha</Setting>
+		<Setting name="sign">true</Setting>
+		<Setting name="signCertAlias">sign1</Setting>
+		<Setting name="signCertKeyPassword">redoubt</Setting>
+		<Setting name="signDigestAlgorithm">sha1</Setting>
+		<Setting name="encrypt">false</Setting>
+		<Setting name="encryptCertAlias">encrypt1</Setting>
+		<Setting name="encryptCertKeyPassword">redoubt</Setting>
+		<Setting name="encryptAlgorithm">3des</Setting>
+		<Setting name="compress">false</Setting>
+		<Setting name="compressAlgorithm">zlib</Setting>
+	</Party>
+	<Party type="remote">
+		<Setting name="id">beta</Setting>
+		<Setting name="signCertAlias">sign1</Setting>
+		<Setting name="encryptCertAlias">encrypt1</Setting>
+	</Party>
+</Parties>
