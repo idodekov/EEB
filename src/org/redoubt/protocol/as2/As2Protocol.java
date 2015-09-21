@@ -8,9 +8,8 @@ import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.Map;
 
-import javax.activation.DataHandler;
+import javax.mail.internet.InternetHeaders;
 import javax.mail.internet.MimeBodyPart;
-import javax.mail.util.ByteArrayDataSource;
 
 import org.apache.log4j.Logger;
 import org.redoubt.api.configuration.ICertificateManager;
@@ -35,18 +34,18 @@ public class As2Protocol extends BaseProtocol {
 	        
 	        FileSystemUtils.checkAs2SizeRestrictions(workFile);
 	        
-	        MimeBodyPart data = new MimeBodyPart();
-	        data.setDataHandler(new DataHandler(new ByteArrayDataSource(Files.readAllBytes(workFile), 
-	        		As2HeaderDictionary.MIME_TYPE_APPLICATION_OCTET_STREAM)));
-	        
 	        @SuppressWarnings("unchecked")
 			Map<String,String> headersMap = (Map<String, String>) context.get(TransportConstants.CONTEXT_HEADER_MAP);
-	        
+	        InternetHeaders headers = new InternetHeaders();
 	        for (Map.Entry<String, String> entry : headersMap.entrySet()) {
-	        	data.setHeader(entry.getKey(), entry.getValue());
+	        	//data.setHeader(entry.getKey(), entry.getValue());
+	        	headers.setHeader(entry.getKey(), entry.getValue());
 	        }
 	        
+	        MimeBodyPart data = new MimeBodyPart(headers, Files.readAllBytes(workFile));
+	        
 	        data.writeTo(Files.newOutputStream(workFile));
+	        
 	        data = decryptAndVerify(data);
 	        
 	        Path productionFile = Paths.get(productionFolder.toString(), workFile.getFileName().toString());
@@ -72,6 +71,7 @@ public class As2Protocol extends BaseProtocol {
             X509Certificate receiverCert = certificateManager.getX509Certificate(settings.getEncryptCertAlias());
             PrivateKey receiverKey = certificateManager.getPrivateKey(settings.getEncryptCertAlias(), settings.getEncryptCertKeyPassword().toCharArray());
             data = cryptoHelper.decrypt(data, receiverCert, receiverKey);
+            sLogger.debug("Message is decrypted.");
         } else {
         	if(encrypt) {
         		//Encryption is enforced
@@ -83,8 +83,9 @@ public class As2Protocol extends BaseProtocol {
    		if (cryptoHelper.isSigned(data)) {
    			sLogger.debug("Message is signed - will attempt to verify the signature.");
 	
-   			X509Certificate senderCert = certificateManager.getX509Certificate(settings.getSignCertAlias());
-   			data = cryptoHelper.verify(data, senderCert);
+   			//X509Certificate senderCert = certificateManager.getX509Certificate(settings.getSignCertAlias());
+   			data = cryptoHelper.verify(data);
+   			sLogger.debug("Signature verified.");
         } else {
         	if(sign) {
         		//Signing is enforced

@@ -19,6 +19,7 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -38,14 +39,18 @@ import org.bouncycastle.asn1.smime.SMIMECapability;
 import org.bouncycastle.asn1.smime.SMIMECapabilityVector;
 import org.bouncycastle.asn1.smime.SMIMEEncryptionKeyPreferenceAttribute;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaCertStore;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cms.CMSAlgorithm;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.RecipientId;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.cms.SignerInformation;
+import org.bouncycastle.cms.SignerInformationStore;
 import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoGeneratorBuilder;
+import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder;
 import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientId;
@@ -59,9 +64,11 @@ import org.bouncycastle.mail.smime.SMIMEEnvelopedParser;
 import org.bouncycastle.mail.smime.SMIMEException;
 import org.bouncycastle.mail.smime.SMIMESigned;
 import org.bouncycastle.mail.smime.SMIMESignedGenerator;
+import org.bouncycastle.mail.smime.SMIMESignedParser;
 import org.bouncycastle.mail.smime.SMIMEUtil;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.OutputCompressor;
+import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.util.Store;
 import org.bouncycastle.util.encoders.Base64;
 import org.redoubt.api.configuration.ICryptoHelper;
@@ -94,7 +101,7 @@ public class BCCryptoHelper implements ICryptoHelper {
             throws GeneralSecurityException, MessagingException, IOException {
         String micAlg = convertAlgorithm(digest, true);
 
-        MessageDigest md = MessageDigest.getInstance(micAlg, "BC");
+        MessageDigest md = MessageDigest.getInstance(micAlg, BouncyCastleProvider.PROVIDER_NAME);
 
         // convert the Mime data to a byte array, then to an InputStream
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
@@ -153,9 +160,7 @@ public class BCCryptoHelper implements ICryptoHelper {
     public void deinit() {
     }
 
-    public MimeBodyPart encrypt(MimeBodyPart part, X509Certificate cert, String algorithm) throws Exception {
-        X509Certificate x509Cert = castCertificate(cert);
-        
+    public MimeBodyPart encrypt(MimeBodyPart part, X509Certificate x509Cert, String algorithm) throws Exception {
         ASN1ObjectIdentifier encAlg = null;
         
         if(CRYPT_RC2.equals(algorithm)) {
@@ -164,16 +169,16 @@ public class BCCryptoHelper implements ICryptoHelper {
         	encAlg = CMSAlgorithm.DES_EDE3_CBC;
         } else if(CRYPT_CAST5.equals(algorithm)) {
         	encAlg = CMSAlgorithm.CAST5_CBC;
-        } else if(CRYPT_IDEA.equals(algorithm)) {
+        } else if(CRYPT_IDEA.equals(algorithm)) { 
         	encAlg = CMSAlgorithm.IDEA_CBC;
         } else {
 			throw new ProtocolException("Unknown encryption algorithm [" + algorithm + "]. Message will not be processed.");
 		}
 
         SMIMEEnvelopedGenerator gen = new SMIMEEnvelopedGenerator();
-        gen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(x509Cert).setProvider("BC"));
+        gen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(x509Cert).setProvider(BouncyCastleProvider.PROVIDER_NAME));
         gen.setContentTransferEncoding(As2HeaderDictionary.TRANSFER_ENCODING_BINARY);
-        MimeBodyPart encData = gen.generate(part, new JceCMSContentEncryptorBuilder(encAlg).setProvider("BC").build());
+        MimeBodyPart encData = gen.generate(part, new JceCMSContentEncryptorBuilder(encAlg).setProvider(BouncyCastleProvider.PROVIDER_NAME).build());
         
         return encData;
     }
@@ -222,7 +227,8 @@ public class BCCryptoHelper implements ICryptoHelper {
         
         SMIMESignedGenerator gen = new SMIMESignedGenerator();
         gen.setContentTransferEncoding(As2HeaderDictionary.TRANSFER_ENCODING_BINARY);
-        gen.addSignerInfoGenerator(new JcaSimpleSignerInfoGeneratorBuilder().setProvider("BC").setSignedAttributeGenerator(new AttributeTable(signedAttrs)).build(digestAlg, privKey, cert));
+        gen.addSignerInfoGenerator(new JcaSimpleSignerInfoGeneratorBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).
+        		setSignedAttributeGenerator(new AttributeTable(signedAttrs)).build(digestAlg, privKey, cert));
         gen.addCertificates(certs);
         MimeMultipart mm = gen.generate(part);
 
@@ -233,42 +239,53 @@ public class BCCryptoHelper implements ICryptoHelper {
         return tempBody;
     }
 
-    public MimeBodyPart verify(MimeBodyPart part, X509Certificate cert)
-            throws GeneralSecurityException, IOException, MessagingException, CMSException {
+    public MimeBodyPart verify(MimeBodyPart part) throws Exception {
         // Make sure the data is signed
         if (!isSigned(part)) {
             throw new GeneralSecurityException("Content-Type indicates data isn't signed");
         }
-
-        X509Certificate x509Cert = castCertificate(cert);
-
+        
         MimeMultipart mainParts = (MimeMultipart) part.getContent();
+        SMIMESignedParser parser = new SMIMESignedParser(new JcaDigestCalculatorProviderBuilder().build(), mainParts);
+        Store certs = parser.getCertificates();
+        
+        SignerInformationStore signers = parser.getSignerInfos();
 
-        SMIMESigned signedPart = new SMIMESigned(mainParts);
+        Collection<SignerInformation> signersCollection = signers.getSigners();
+        Iterator<SignerInformation> it = signersCollection.iterator();
+        
+        while (it.hasNext()) {
+        	SignerInformation signer = (SignerInformation)it.next();
+            Collection certCollection = certs.getMatches(signer.getSID());
 
-        Iterator signerIt = signedPart.getSignerInfos().getSigners().iterator();
-        SignerInformation signer;
-
-        while (signerIt.hasNext()) {
-            signer = (SignerInformation) signerIt.next();
-
-            if (!signer.verify(x509Cert, "BC")) {
-                throw new SignatureException("Verification failed");
+            Iterator certIt = certCollection.iterator();
+            X509Certificate cert = new JcaX509CertificateConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME).getCertificate((X509CertificateHolder)certIt.next());
+            
+            if (!signer.verify(new JcaSimpleSignerInfoVerifierBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(cert))) {
+            	throw new SignatureException("Signature verification failed!");
             }
         }
-
+        
+        SMIMESigned signedPart = new SMIMESigned(mainParts);
         return signedPart.getContent();
-    }
-
-    protected X509Certificate castCertificate(Certificate cert) throws GeneralSecurityException {
-        if (cert == null) {
-            throw new GeneralSecurityException("Certificate is null");
-        }
-        if (!(cert instanceof X509Certificate)) {
-            throw new GeneralSecurityException("Certificate must be an instance of X509Certificate");
-        }
-
-        return (X509Certificate) cert;
+        
+        
+//        MimeMultipart mainParts = (MimeMultipart) part.getContent();
+//
+//        SMIMESigned signedPart = new SMIMESigned(mainParts);
+//
+//        Iterator signerIt = signedPart.getSignerInfos().getSigners().iterator();
+//        SignerInformation signer;
+//
+//        while (signerIt.hasNext()) {
+//            signer = (SignerInformation) signerIt.next();
+//
+//            if (!signer.verify(cert, BouncyCastleProvider.PROVIDER_NAME)) {
+//                throw new SignatureException("Verification failed");
+//            }
+//        }
+//
+//        return signedPart.getContent();
     }
 
     protected PrivateKey castKey(Key key) throws GeneralSecurityException {
