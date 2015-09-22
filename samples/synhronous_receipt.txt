@@ -1,0 +1,34 @@
+HTTP/1.1 200 OK
+Date: Tue, 22 Sep 2015 16:53:09 GMT
+From: 26@26.26
+Message-ID: <1442940789401.198582@localhost_te>
+MIME-Version: 1.0
+Content-Type: multipart/report;  boundary="----=_Part_22_752085596.1442940789401";  report-type=disposition-notification
+EDIINT-Features: CEM, multiple-attachments, AS2-Reliability
+AS2-Version: 1.2
+AS2-From: id26
+AS2-To: id199
+Connection: close
+Content-Length: 792
+
+------=_Part_22_752085596.1442940789401
+Content-Type: text/plain; charset=us-ascii
+
+This MDN (Message Disposition Notification) was automatically built on
+Tue, 22 Sep 2015 16:53:09 GMT in response to a message with id 
+<1442940798754.200240@vm14-199_te> received from
+id26 on Tue, 22 Sep 2015 16:53:09 GMT.
+Unless stated otherwise, the message to which this MDN applies
+was successfully processed.
+
+------=_Part_22_752085596.1442940789401
+Content-Type: message/disposition-notification
+
+Original-Recipient: rfc822; id26
+Final-Recipient: rfc822; id26
+Original-Message-ID: <1442940798754.200240@vm14-199_te>
+Disposition: automatic-action/MDN-sent-automatically; processed
+Received-Content-MIC: G1+d4NZFSUMHOyvH38VWCDk0GKw=, sha1
+
+
+------=_Part_22_752085596.1442940789401--
