@@ -30,6 +30,7 @@ import org.redoubt.application.VersionInformation;
 import org.redoubt.application.configuration.ConfigurationConstants;
 import org.redoubt.application.configuration.Party;
 import org.redoubt.protocol.ProtocolException;
+import org.redoubt.protocol.as2.mdn.As2MdnMessage;
 import org.redoubt.util.FileSystemUtils;
 import org.redoubt.util.Utils;
 
@@ -100,6 +101,7 @@ public class As2Message implements IMessage {
 		}
 	}
 	
+	@Override
 	public void packageMessage(IProtocolSettings settings) throws Exception {
 		As2ProtocolSettings as2Settings = (As2ProtocolSettings) settings;
 		sLogger.debug("Packaging As2 message...");
@@ -222,6 +224,7 @@ public class As2Message implements IMessage {
         }
 	}
 	
+	@Override
 	public void unpackageMessage(IProtocolSettings settings) throws Exception {
 		As2ProtocolSettings as2Settings = (As2ProtocolSettings) settings;
 		sLogger.debug("Unpackaging As2 message...");
@@ -388,6 +391,54 @@ public class As2Message implements IMessage {
 		}
     }
 	
+	public As2MdnMessage generateMdnMessage() {
+		As2MdnMessage message = new As2MdnMessage();
+		message.setMic(mic);
+		message.setFromAddres(toAddress);
+		message.setToAddres(fromAddress);
+		return message;
+	}
+	
+	public boolean isMdnReqested() {
+		return mdn;
+	}
+
+	public void setMdnRequested(boolean mdn) {
+		this.mdn = mdn;
+	}
+
+	public String getMdnType() {
+		return mdnType;
+	}
+
+	public void setMdnType(String mdnType) {
+		this.mdnType = mdnType;
+	}
+
+	public String getAsynchronousMdnUrl() {
+		return asynchronousMdnUrl;
+	}
+
+	public void setAsynchronousMdnUrl(String asynchronousMdnUrl) {
+		this.asynchronousMdnUrl = asynchronousMdnUrl;
+	}
+
+	public boolean isRequestSignedMdn() {
+		return requestSignedMdn;
+	}
+
+	public void setRequestSignedMdn(boolean requestSignedMdn) {
+		this.requestSignedMdn = requestSignedMdn;
+	}
+
+	public String getMdnSigningAlgorithm() {
+		return mdnSigningAlgorithm;
+	}
+
+	public void setMdnSigningAlgorithm(String mdnSigningAlgorithm) {
+		this.mdnSigningAlgorithm = mdnSigningAlgorithm;
+	}
+
 	public String getMessageDate() {
 		return messageDate;
 	}

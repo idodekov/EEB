@@ -35,6 +35,10 @@ public class As2Protocol extends BaseProtocol {
 	        
 	        Path productionFile = Paths.get(productionFolder.toString(), workFile.getFileName().toString());
 	        message.writeMimeDataToFile(productionFile);
+	        
+	        if(message.isMdnReqested()) {
+	        	
+	        }
         } catch (Exception e) {
             sLogger.error("An error has occured while unpackaging As2 message. " + e.getMessage(), e);
             throw new ProtocolException(e.getMessage(), e);

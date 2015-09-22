@@ -1,4 +1,4 @@
-package org.redoubt.protocol.as2;
+package org.redoubt.protocol.as2.mdn;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,6 +6,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.redoubt.api.protocol.IMdnMonitor;
 import org.redoubt.api.protocol.IMessage;
+import org.redoubt.protocol.as2.As2Message;
 import org.redoubt.util.Utils;
 
 public class As2InMemoryMdnMonitor implements IMdnMonitor {
