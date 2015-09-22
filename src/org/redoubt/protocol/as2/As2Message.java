@@ -126,6 +126,8 @@ public class As2Message {
 		data.setHeader(As2HeaderDictionary.CONTENT_TYPE, As2HeaderDictionary.MIME_TYPE_APPLICATION_OCTET_STREAM);
 		data.setHeader(As2HeaderDictionary.CONTENT_TRANSFER_ENCODING, As2HeaderDictionary.TRANSFER_ENCODING_BINARY);
 
+		calculateMIC("sha1");
+		
 		secure();
 		
 		date = Utils.createTimestamp();
@@ -218,7 +220,9 @@ public class As2Message {
         encryptCertKeyPassword = localParty.getEncryptCertKeyPassword();
         
         decryptAndVerify(settings.isEncryptionEnforced(), settings.isSigningEnforced());
-		
+        
+        calculateMIC("sha1");
+        
 		sLogger.debug("As2 message successfully unpackaged.");
 		
 		return data;
