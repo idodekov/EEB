@@ -141,6 +141,10 @@ public class As2Message implements IMessage {
 		data.setHeader(As2HeaderDictionary.CONTENT_TRANSFER_ENCODING, As2HeaderDictionary.TRANSFER_ENCODING_BINARY);
 
 		if(mdn) {
+			if(Utils.isNullOrEmptyTrimmed(mdnSigningAlgorithm)) {
+				mdnSigningAlgorithm = ICryptoHelper.DIGEST_SHA1;
+			}
+			
 			calculateMIC(mdnSigningAlgorithm);
 		}
 		
@@ -257,7 +261,12 @@ public class As2Message implements IMessage {
         
         decryptAndVerify(as2Settings.isEncryptionEnforced(), as2Settings.isSigningEnforced());
         
-        calculateMIC("sha1");
+        prepreInboundMdnOptions();
+        
+        if(Utils.isNullOrEmptyTrimmed(mdnSigningAlgorithm)) {
+        	mdnSigningAlgorithm = ICryptoHelper.DIGEST_SHA1;
+        }
+        calculateMIC(mdnSigningAlgorithm);
         
 		sLogger.debug("As2 message successfully unpackaged.");
 		
@@ -301,6 +310,47 @@ public class As2Message implements IMessage {
    			sLogger.debug("Message is decompressed.");
    		}
     }
+	
+	protected void prepreInboundMdnOptions() {
+		String dispositionNotificationTo = headers.get(As2HeaderDictionary.DISPOSITION_NOTIFICATION_TO);
+        if(!Utils.isNullOrEmptyTrimmed(dispositionNotificationTo)) {
+        	mdn = true;
+        	
+        	String asyncUrl = headers.get(As2HeaderDictionary.RECEIPT_DELIVERY_OPTIONS);
+        	if(Utils.isNullOrEmptyTrimmed(asyncUrl)) {
+        		mdnType = ConfigurationConstants.MDN_TYPE_SYNCHRONOUS;
+        	} else {
+        		mdnType = ConfigurationConstants.MDN_TYPE_ASYNCHRONOUS;
+        		asynchronousMdnUrl = asyncUrl;
+        	}
+        	
+        	String dispositionNotificationOptions = headers.get(As2HeaderDictionary.DISPOSITION_NOTIFICATION_OPTIONS);
+        	if(!Utils.isNullOrEmptyTrimmed(dispositionNotificationOptions)) {
+        		requestSignedMdn = true;
+        		String micAlg = ICryptoHelper.DIGEST_SHA1;
+        		
+        		if(dispositionNotificationOptions.startsWith("signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional,")) {
+        			int startIndex = dispositionNotificationOptions.lastIndexOf("signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional,");
+        			String micAlgList = dispositionNotificationOptions.substring(startIndex).trim();
+        			if(micAlgList.contains(",")) {
+        				/* Means that more than a single mic alg is set - just get the first one */
+        				for(String str : micAlgList.split(",")) {
+        					if(str.equals(ICryptoHelper.DIGEST_SHA1) || str.equals(ICryptoHelper.DIGEST_MD5)) {
+        						micAlg = str;
+        					}
+        				}
+        			} else {
+        				if(micAlgList.equals(ICryptoHelper.DIGEST_SHA1) || micAlgList.equals(ICryptoHelper.DIGEST_MD5)) {
+    						micAlg = micAlgList;
+    					}
+        			}
+        			
+        		}
+        		
+        		mdnSigningAlgorithm = micAlg;
+        	}
+        }
+	}
 	
 	protected void resolveParties(String remotePartyId, String localPartyId) throws ProtocolException {
 		if(remotePartyId == null || localPartyId == null) {
