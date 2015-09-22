@@ -48,7 +48,6 @@ public class Utils {
 		}
 
 		StringBuilder messageId = new StringBuilder();
-		messageId.append("<");
 		messageId.append(VersionInformation.APP_NAME);
 		messageId.append(".");
 		messageId.append(timestampParameter);
@@ -58,7 +57,6 @@ public class Utils {
 		messageId.append(sender);
 		messageId.append(".");
 		messageId.append(hostname);
-		messageId.append(">");
 		
 		String id = messageId.toString();
 		
@@ -66,6 +64,18 @@ public class Utils {
 		
         return id;
     }
+	
+	public static String parseMessageID(String messageId) {
+		if(messageId == null) {
+			return null;
+		}
+		
+		if(messageId.startsWith("<") && messageId.endsWith(">")) {
+			return messageId.substring(1, messageId.length() -2);
+		}
+		
+		return messageId;
+	}
 	
 	public static String createTimestamp() {
 		SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
@@ -79,5 +89,13 @@ public class Utils {
 		/* Make sure content-type header is on a single line */
 		contentType = contentType.replaceAll("(\r\n)|(\t)", "");
 		return contentType;
+	}
+	
+	public static boolean isNullOrEmptyTrimmed(String str) {
+		if(str == null || str.trim().isEmpty()) {
+			return true;
+		}
+		
+		return false;
 	}
 }
