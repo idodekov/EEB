@@ -3,10 +3,16 @@ package org.redoubt.cert;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SignatureException;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
+import java.util.Date;
 
 import org.apache.log4j.Logger;
 import org.redoubt.api.configuration.ICertificateManager;
@@ -58,8 +64,10 @@ public class JksCertificateManager implements ICertificateManager {
                 throw new KeyStoreException(alias);
             }
 			
+			checkCertificateValidity(cert);
+			
 			return cert;
-		} catch (KeyStoreException e) {
+		} catch (Exception e) {
 			sLogger.error("An error has occured while fetching certificate with alias [" + alias + "] in keystore! " + e.getMessage(), e);
 			return null;
 		}
@@ -80,4 +88,36 @@ public class JksCertificateManager implements ICertificateManager {
 			return null;
 		}
     }
+    
+    @Override
+    public boolean isSelfSigned(X509Certificate cert) throws Exception {
+        try {
+            PublicKey key = cert.getPublicKey();
+            cert.verify(key);
+            return true;
+        } catch (SignatureException sigEx) {
+            // Invalid signature --> not self-signed
+            return false;
+        } catch (InvalidKeyException keyEx) {
+            // Invalid key --> not self-signed
+            return false;
+        }
+    }
+
+	@Override
+	public boolean checkCertificateValidity(X509Certificate cert) throws Exception {
+		Date today = new Date();
+		Date notAfter = cert.getNotAfter(); 
+		Date notBefore = cert.getNotBefore();
+		
+		if(today.before(notBefore)) {
+			throw new CertificateNotYetValidException("Certificate is not yet valid!");
+		}
+		
+		if(today.after(notAfter)) {
+			throw new CertificateExpiredException("Certificate has expired!");
+		}
+		
+		return true;
+	}
 }

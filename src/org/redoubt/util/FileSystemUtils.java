@@ -7,9 +7,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeBodyPart;
-
 import org.apache.log4j.Logger;
 import org.redoubt.api.configuration.IServerConfigurationManager;
 import org.redoubt.api.factory.Factory;

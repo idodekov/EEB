@@ -3,14 +3,10 @@
 	<Transport type="http">
 		<Protocol type="as2">
 			<Setting name="direction">inbound</Setting>
-			<Setting name="from">beta</Setting>
-			<Setting name="to">alpha</Setting>
 			<Setting name="productionFolder">F:\</Setting>
-			<Setting name="sign">false</Setting>
-			<Setting name="signCertAlias">sign1</Setting>
-			<Setting name="encrypt">false</Setting>
-			<Setting name="encryptCertAlias">encrypt1</Setting>
-			<Setting name="encryptCertKeyPassword">redoubt</Setting>
+			<Setting name="enforceSigning">false</Setting>
+			<Setting name="enforceEncryption">false</Setting>
+			<Setting name="to">beta</Setting>
 		</Protocol>
 		<Setting name="name">AS2 HTTP server</Setting>
 		<Setting name="port">4080</Setting>
@@ -25,15 +21,8 @@
 			<Setting name="url">http://localhost:4080/as2/</Setting>
 			<Setting name="username">idodekov</Setting>
 			<Setting name="password">SECRET123</Setting>
-			<Setting name="sign">true</Setting>
-			<Setting name="signCertAlias">sign1</Setting>
-			<Setting name="signCertKeyPassword">redoubt</Setting>
-			<Setting name="signDigestAlgorithm">sha1</Setting>
-			<Setting name="encrypt">true</Setting>
-			<Setting name="encryptCertAlias">encrypt1</Setting>
-			<Setting name="encryptAlgorithm">3des</Setting>
-			<Setting name="compress">true</Setting>
-			<Setting name="compressAlgorithm">zlib</Setting>
+			<Setting name="enforceSigning">false</Setting>
+			<Setting name="enforceEncryption">false</Setting>
 		</Protocol>
 		<Setting name="folder">F:\WORK\___WORK</Setting>
 		<Setting name="name">FileSystem</Setting>

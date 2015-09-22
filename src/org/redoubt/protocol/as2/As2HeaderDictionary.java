@@ -13,7 +13,7 @@ public class As2HeaderDictionary {
     public static final String ACCEPT_ENCODING = "Accept-Encoding";
     public static final String MIME_VERSION = "MIME-Version";
     public static final String DATE = "Date";
-    public static final String MESSAGE_ID = "Message-ID";
+    public static final String MESSAGE_ID = "Message-Id";
     public static final String FROM = "From";
     public static final String SUBJECT = "Subject";
     

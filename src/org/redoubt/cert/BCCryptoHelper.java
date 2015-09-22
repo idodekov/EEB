@@ -1,22 +1,15 @@
 package org.redoubt.cert;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.DigestInputStream;
 import java.security.GeneralSecurityException;
-import java.security.Key;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.Security;
 import java.security.SignatureException;
-import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,7 +36,6 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaCertStore;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cms.CMSAlgorithm;
-import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.RecipientId;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
@@ -60,15 +52,12 @@ import org.bouncycastle.cms.jcajce.ZlibExpanderProvider;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.mail.smime.SMIMECompressedGenerator;
 import org.bouncycastle.mail.smime.SMIMECompressedParser;
-import org.bouncycastle.mail.smime.SMIMEEnveloped;
 import org.bouncycastle.mail.smime.SMIMEEnvelopedGenerator;
 import org.bouncycastle.mail.smime.SMIMEEnvelopedParser;
-import org.bouncycastle.mail.smime.SMIMEException;
 import org.bouncycastle.mail.smime.SMIMESigned;
 import org.bouncycastle.mail.smime.SMIMESignedGenerator;
 import org.bouncycastle.mail.smime.SMIMESignedParser;
 import org.bouncycastle.mail.smime.SMIMEUtil;
-import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.OutputCompressor;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.util.Store;
@@ -78,6 +67,21 @@ import org.redoubt.protocol.ProtocolException;
 import org.redoubt.protocol.as2.As2HeaderDictionary;
 
 public class BCCryptoHelper implements ICryptoHelper {
+	
+	public void init() {
+        Security.addProvider(new BouncyCastleProvider());
+
+        MailcapCommandMap mc = (MailcapCommandMap) CommandMap.getDefaultCommandMap();
+        mc.addMailcap("application/pkcs7-signature;; x-java-content-handler=org.bouncycastle.mail.smime.handlers.pkcs7_signature");
+        mc.addMailcap("application/pkcs7-mime;; x-java-content-handler=org.bouncycastle.mail.smime.handlers.pkcs7_mime");
+        mc.addMailcap("application/x-pkcs7-signature;; x-java-content-handler=org.bouncycastle.mail.smime.handlers.x_pkcs7_signature");
+        mc.addMailcap("application/x-pkcs7-mime;; x-java-content-handler=org.bouncycastle.mail.smime.handlers.x_pkcs7_mime");
+        mc.addMailcap("multipart/signed;; x-java-content-handler=org.bouncycastle.mail.smime.handlers.multipart_signed");
+        CommandMap.setDefaultCommandMap(mc);
+    }
+
+    public void deinit() {
+    }
 	
     public boolean isEncrypted(MimeBodyPart part) throws MessagingException {
         ContentType contentType = new ContentType(part.getContentType());
@@ -112,40 +116,32 @@ public class BCCryptoHelper implements ICryptoHelper {
         return false;
     }
 
-    public String calculateMIC(MimeBodyPart part, String digest, boolean includeHeaders)
-            throws GeneralSecurityException, MessagingException, IOException {
-        String micAlg = convertAlgorithm(digest, true);
-
-        MessageDigest md = MessageDigest.getInstance(micAlg, BouncyCastleProvider.PROVIDER_NAME);
-
-        // convert the Mime data to a byte array, then to an InputStream
-        ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-
-        if (includeHeaders) {
-            part.writeTo(bOut);
+    public String calculateMIC(Path file, String digestAlg) throws Exception {
+    	String micAlg = null;
+    	
+    	if(DIGEST_SHA1.equals(digestAlg)) {
+        	micAlg = "sha1";
+        } else if(DIGEST_MD5.equals(digestAlg)) {
+        	micAlg = "md5";
         } else {
-            IOUtil.copy(part.getInputStream(), bOut);
-        }
+			throw new ProtocolException("Unknown digest algorithm [" + digestAlg + "]. Message will not be processed.");
+		}
+    	
+    	MessageDigest md = MessageDigest.getInstance(micAlg, BouncyCastleProvider.PROVIDER_NAME);
+    	try (InputStream is = Files.newInputStream(file)) {
+    	  DigestInputStream dis = new DigestInputStream(is, md);
+    	  
+    	  /* Read stream to EOF */
+    	  byte[] buf = new byte[4096];
 
-        byte[] data = bOut.toByteArray();
-
-        InputStream bIn = trimCRLFPrefix(data);
-
-        // calculate the hash of the data and mime header
-        DigestInputStream digIn = new DigestInputStream(bIn, md);
-
-        byte[] buf = new byte[4096];
-
-        while (digIn.read(buf) >= 0) {
-        }
-
-        bOut.close();
-
-        byte[] mic = digIn.getMessageDigest().digest();
-        String micString = new String(Base64.encode(mic));
+          while (dis.read(buf) >= 0) {
+          }
+    	}
+    	byte[] digest = md.digest();
+    	String micString = new String(Base64.encode(digest));
         StringBuffer micResult = new StringBuffer(micString);
-        micResult.append(", ").append(digest);
-
+        micResult.append(", ").append(micAlg);
+    	
         return micResult.toString();
     }
 
@@ -167,14 +163,11 @@ public class BCCryptoHelper implements ICryptoHelper {
             throw new GeneralSecurityException("Certificate does not match part signature");
         }
         
-        MimeBodyPart res = SMIMEUtil.toMimeBodyPart(recipient.getContentStream(new JceKeyTransEnvelopedRecipient(key).setProvider("BC")));
+        MimeBodyPart res = SMIMEUtil.toMimeBodyPart(recipient.getContentStream(new JceKeyTransEnvelopedRecipient(key).setProvider(BouncyCastleProvider.PROVIDER_NAME)));
 
         return res;
     }
-
-    public void deinit() {
-    }
-
+    
     public MimeBodyPart encrypt(MimeBodyPart part, X509Certificate x509Cert, String algorithm) throws Exception {
         ASN1ObjectIdentifier encAlg = null;
         
@@ -198,18 +191,6 @@ public class BCCryptoHelper implements ICryptoHelper {
         return encData;
     }
 
-    public void init() {
-        Security.addProvider(new BouncyCastleProvider());
-
-        MailcapCommandMap mc = (MailcapCommandMap) CommandMap.getDefaultCommandMap();
-        mc.addMailcap("application/pkcs7-signature;; x-java-content-handler=org.bouncycastle.mail.smime.handlers.pkcs7_signature");
-        mc.addMailcap("application/pkcs7-mime;; x-java-content-handler=org.bouncycastle.mail.smime.handlers.pkcs7_mime");
-        mc.addMailcap("application/x-pkcs7-signature;; x-java-content-handler=org.bouncycastle.mail.smime.handlers.x_pkcs7_signature");
-        mc.addMailcap("application/x-pkcs7-mime;; x-java-content-handler=org.bouncycastle.mail.smime.handlers.x_pkcs7_mime");
-        mc.addMailcap("multipart/signed;; x-java-content-handler=org.bouncycastle.mail.smime.handlers.multipart_signed");
-        CommandMap.setDefaultCommandMap(mc);
-    }
-
     public MimeBodyPart sign(MimeBodyPart part, X509Certificate cert, PrivateKey key, String digest) throws Exception {
         String digestAlg = null;
         
@@ -225,7 +206,8 @@ public class BCCryptoHelper implements ICryptoHelper {
 
         certList.add(cert);
 
-        Store certs = new JcaCertStore(certList);
+        @SuppressWarnings("rawtypes")
+		Store certs = new JcaCertStore(certList);
         
         ASN1EncodableVector         signedAttrs = new ASN1EncodableVector();
         SMIMECapabilityVector       caps = new SMIMECapabilityVector();

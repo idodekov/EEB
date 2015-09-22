@@ -1,5 +1,6 @@
 package org.redoubt.api.configuration;
 
+import java.nio.file.Path;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 
@@ -24,7 +25,7 @@ public interface ICryptoHelper {
     
     boolean isCompressed(MimeBodyPart part) throws Exception;
 
-    String calculateMIC(MimeBodyPart part, String digest, boolean includeHeaders) throws Exception;
+    String calculateMIC(Path file, String digestAlg) throws Exception;
 
     MimeBodyPart decrypt(MimeBodyPart part, X509Certificate cert, PrivateKey key) throws Exception;
 

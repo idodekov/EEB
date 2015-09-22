@@ -14,16 +14,8 @@ public class As2ProtocolSettings extends SettingsHolder implements IProtocolSett
 		//Set default values
 		put(As2ProtocolSettingsKeyring.USERNAME, "");
 		put(As2ProtocolSettingsKeyring.PASSWORD, "");
-		put(As2ProtocolSettingsKeyring.SIGN, Boolean.toString(false));
-		put(As2ProtocolSettingsKeyring.ENCRYPT, Boolean.toString(false));
-		put(As2ProtocolSettingsKeyring.SIGN_CERT_KEY_PASSWORD, "");
-		put(As2ProtocolSettingsKeyring.SIGN_CERT_ALIAS, "");
-		put(As2ProtocolSettingsKeyring.ENCRYPT_CERT_ALIAS, "");
-		put(As2ProtocolSettingsKeyring.SIGN_DIGEST_ALGORITHM, "sha1");
-		put(As2ProtocolSettingsKeyring.ENCRYPT_CERT_KEY_PASSWORD, "");
-		put(As2ProtocolSettingsKeyring.ENCRYPT_ALGORITHM, "3des");
-		put(As2ProtocolSettingsKeyring.COMPRESS, Boolean.toString(false));
-		put(As2ProtocolSettingsKeyring.COMPRESS_ALGORITHM, "zlib");
+		put(As2ProtocolSettingsKeyring.ENFORCE_SIGNING, Boolean.toString(false));
+		put(As2ProtocolSettingsKeyring.ENFORCE_ENCRYPTION, Boolean.toString(false));
 	}
 
 	@Override
@@ -80,68 +72,20 @@ public class As2ProtocolSettings extends SettingsHolder implements IProtocolSett
         put(As2ProtocolSettingsKeyring.PASSWORD, password);
     }
     
-    public boolean isEncryptionEnabled() {
-    	return Boolean.parseBoolean((String) get(As2ProtocolSettingsKeyring.ENCRYPT));
+    public boolean isEncryptionEnforced() {
+    	return Boolean.parseBoolean((String) get(As2ProtocolSettingsKeyring.ENFORCE_ENCRYPTION));
     }
     
-    public void setEncryptionEnabled(boolean encrypt) {
-    	put(As2ProtocolSettingsKeyring.ENCRYPT, Boolean.toString(encrypt));
+    public void setEncryptionEnforced(boolean enforce) {
+    	put(As2ProtocolSettingsKeyring.ENFORCE_ENCRYPTION, Boolean.toString(enforce));
     }
     
-    public String getEncryptCertAlias() {
-        return (String) get(As2ProtocolSettingsKeyring.ENCRYPT_CERT_ALIAS);
+    public boolean isSigningEnforced() {
+    	return Boolean.parseBoolean((String) get(As2ProtocolSettingsKeyring.ENFORCE_SIGNING));
     }
     
-    public void setEncryptCertAlias(String encryptCertAlias) {
-        put(As2ProtocolSettingsKeyring.ENCRYPT_CERT_ALIAS, encryptCertAlias);
-    }
-    
-    public String getEncryptCertKeyPassword() {
-        return (String) get(As2ProtocolSettingsKeyring.ENCRYPT_CERT_KEY_PASSWORD);
-    }
-    
-    public void setEncryptCertKeyPassword(String encryptCertKeyPassword) {
-        put(As2ProtocolSettingsKeyring.ENCRYPT_CERT_KEY_PASSWORD, encryptCertKeyPassword);
-    }
-    
-    public String getEncryptAlgorithm() {
-        return (String) get(As2ProtocolSettingsKeyring.ENCRYPT_ALGORITHM);
-    }
-    
-    public void setEncryptAlgorithm(String alg) {
-        put(As2ProtocolSettingsKeyring.ENCRYPT_ALGORITHM, alg);
-    }
-    
-    public boolean isSigningEnabled() {
-    	return Boolean.parseBoolean((String) get(As2ProtocolSettingsKeyring.SIGN));
-    }
-    
-    public void setSigningEnabled(boolean sign) {
-    	put(As2ProtocolSettingsKeyring.SIGN, Boolean.toString(sign));
-    }
-    
-    public String getSignCertAlias() {
-        return (String) get(As2ProtocolSettingsKeyring.SIGN_CERT_ALIAS);
-    }
-    
-    public void setSignCertAlias(String signCertAlias) {
-        put(As2ProtocolSettingsKeyring.SIGN_CERT_ALIAS, signCertAlias);
-    }
-    
-    public String getSignCertKeyPassword() {
-        return (String) get(As2ProtocolSettingsKeyring.SIGN_CERT_KEY_PASSWORD);
-    }
-    
-    public void setSignCertKeyPassword(String signCertKeyPassword) {
-        put(As2ProtocolSettingsKeyring.SIGN_CERT_KEY_PASSWORD, signCertKeyPassword);
-    }
-    
-    public String getSignDigestAlgorithm() {
-        return (String) get(As2ProtocolSettingsKeyring.SIGN_DIGEST_ALGORITHM);
-    }
-    
-    public void setSignDigestAlgorithm(String alg) {
-        put(As2ProtocolSettingsKeyring.SIGN_DIGEST_ALGORITHM, alg);
+    public void setSigningEnforced(boolean enforce) {
+    	put(As2ProtocolSettingsKeyring.ENFORCE_SIGNING, Boolean.toString(enforce));
     }
     
     public Path getProductionFolder() {
@@ -152,22 +96,6 @@ public class As2ProtocolSettings extends SettingsHolder implements IProtocolSett
         put(As2ProtocolSettingsKeyring.PRODUCTION_FOLDER, folder);
     }
     
-    public boolean isCompressionEnabled() {
-    	return Boolean.parseBoolean((String) get(As2ProtocolSettingsKeyring.COMPRESS));
-    }
-    
-    public void setCompressionEnabled(boolean compress) {
-    	put(As2ProtocolSettingsKeyring.COMPRESS, Boolean.toString(compress));
-    }
-    
-    public String getCompressionAlgorithm() {
-        return (String) get(As2ProtocolSettingsKeyring.COMPRESS_ALGORITHM);
-    }
-    
-    public void setCompressionAlgorithm(String alg) {
-        put(As2ProtocolSettingsKeyring.COMPRESS_ALGORITHM, alg);
-    }
-    
     public class As2ProtocolSettingsKeyring {
         public static final String DIRECTION = "direction";
         public static final String FROM = "from";
@@ -176,16 +104,8 @@ public class As2ProtocolSettings extends SettingsHolder implements IProtocolSett
         public static final String USERNAME = "username";
         public static final String PASSWORD = "password";
         public static final String PRODUCTION_FOLDER = "productionFolder";
-        public static final String SIGN = "sign";
-        public static final String SIGN_CERT_ALIAS = "signCertAlias";
-        public static final String SIGN_CERT_KEY_PASSWORD = "signCertKeyPassword";
-        public static final String SIGN_DIGEST_ALGORITHM = "signDigestAlgorithm";
-        public static final String ENCRYPT = "encrypt";
-        public static final String ENCRYPT_CERT_ALIAS = "encryptCertAlias";
-        public static final String ENCRYPT_CERT_KEY_PASSWORD = "encryptCertKeyPassword";
-        public static final String ENCRYPT_ALGORITHM = "encryptAlgorithm";
-        public static final String COMPRESS = "compress";
-        public static final String COMPRESS_ALGORITHM = "compressAlgorithm";
+        public static final String ENFORCE_SIGNING = "enforceSigning";
+        public static final String ENFORCE_ENCRYPTION = "enforceEncryption";
     }
 
 }
