@@ -155,7 +155,7 @@ public class As2Message implements IMessage {
         headers.put(As2HeaderDictionary.AS2_FROM, fromAddress);
         headers.put(As2HeaderDictionary.AS2_TO, toAddress);
         headers.put(As2HeaderDictionary.AS2_VERSION, As2HeaderDictionary.AS2_VERSION_1_1);
-        headers.put(As2HeaderDictionary.CONNECTION, "close, TE");
+        headers.put(As2HeaderDictionary.CONNECTION, "close");
         headers.put(As2HeaderDictionary.USER_AGENT, VersionInformation.APP_NAME + " " + VersionInformation.APP_VERSION);
         headers.put(As2HeaderDictionary.ACCEPT_ENCODING, "gzip,deflate");
         headers.put(As2HeaderDictionary.MIME_VERSION, As2HeaderDictionary.MIME_VERSION_1_0);
