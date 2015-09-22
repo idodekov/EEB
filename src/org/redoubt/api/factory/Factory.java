@@ -7,6 +7,7 @@ import org.redoubt.api.configuration.ICertificateManager;
 import org.redoubt.api.configuration.ICryptoHelper;
 import org.redoubt.api.configuration.IPartyManager;
 import org.redoubt.api.configuration.IServerConfigurationManager;
+import org.redoubt.api.protocol.IMdnMonitor;
 import org.redoubt.api.protocol.IProtocol;
 import org.redoubt.api.protocol.IProtocolManager;
 import org.redoubt.api.protocol.IProtocolSettings;
@@ -20,6 +21,7 @@ import org.redoubt.cert.JksCertificateManager;
 import org.redoubt.protocol.ProtocolException;
 import org.redoubt.protocol.XmlProtocolManager;
 import org.redoubt.protocol.as2.As2HttpListener;
+import org.redoubt.protocol.as2.As2InMemoryMdnMonitor;
 import org.redoubt.protocol.as2.As2Protocol;
 import org.redoubt.protocol.as2.As2ProtocolSettings;
 import org.redoubt.protocol.none.NoneProtocol;
@@ -38,6 +40,7 @@ public class Factory {
 	private static ICertificateManager sCertificateManager;
 	private static ICryptoHelper sCryptoHelper;
 	private static IPartyManager sPartyManager;
+	private static IMdnMonitor sMdnMonitor;
 	private static final Object SINGLETON_LOCK = new Object();
 	
 	private static final Logger sLogger = Logger.getLogger(Factory.class);
@@ -56,6 +59,28 @@ public class Factory {
 		}
 		
 		return sInstance;
+	}
+	
+	public IMdnMonitor getMdnMonitor() {
+		return getMdnMonitor(FactoryConstants.AS2_MDN_MONITOR_IN_MEMORY);
+	}
+	
+	public IMdnMonitor getMdnMonitor(String type) {
+		if(sMdnMonitor == null) {
+            synchronized(SINGLETON_LOCK) {
+                if(sMdnMonitor == null) {
+                	sLogger.info("Initializing MdnMonitor instance...");
+                    
+                    if(FactoryConstants.AS2_MDN_MONITOR_IN_MEMORY.equals(type)) {
+                    	sMdnMonitor = new As2InMemoryMdnMonitor();
+                    }
+                    
+                    sLogger.info("MdnMonitor instance successfully initialized. Type is [" + type + "].");
+                }
+            }
+		}
+		
+		return sMdnMonitor;
 	}
 	
 	public IPartyManager getPartyManager() {

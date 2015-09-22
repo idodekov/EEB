@@ -16,6 +16,9 @@ public class As2HeaderDictionary {
     public static final String MESSAGE_ID = "Message-Id";
     public static final String FROM = "From";
     public static final String SUBJECT = "Subject";
+    public static final String DISPOSITION_NOTIFICATION_TO = "Disposition-Notification-To";
+    public static final String DISPOSITION_NOTIFICATION_OPTIONS = "Disposition-Notification-Options";
+    public static final String RECEIPT_DELIVERY_OPTIONS = "Receipt-Delivery-Option";
     
     public static final String MIME_TYPE_APPLICATION_OCTET_STREAM = "application/octet-stream";
     public static final String TRANSFER_ENCODING_BINARY = "binary";

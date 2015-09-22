@@ -21,4 +21,7 @@ public class ConfigurationConstants {
     
     public static final String DIRECTION_INBOUND = "inbound";
     public static final String DIRECTION_OUTBOUND = "outbound";
+    
+    public static final String MDN_TYPE_SYNCHRONOUS = "synchronous";
+    public static final String MDN_TYPE_ASYNCHRONOUS = "asynchronous";
 }

@@ -23,13 +23,17 @@ import org.redoubt.api.configuration.ICertificateManager;
 import org.redoubt.api.configuration.ICryptoHelper;
 import org.redoubt.api.configuration.IPartyManager;
 import org.redoubt.api.factory.Factory;
+import org.redoubt.api.protocol.IMdnMonitor;
+import org.redoubt.api.protocol.IMessage;
+import org.redoubt.api.protocol.IProtocolSettings;
 import org.redoubt.application.VersionInformation;
+import org.redoubt.application.configuration.ConfigurationConstants;
 import org.redoubt.application.configuration.Party;
 import org.redoubt.protocol.ProtocolException;
 import org.redoubt.util.FileSystemUtils;
 import org.redoubt.util.Utils;
 
-public class As2Message {
+public class As2Message implements IMessage {
 	private static final Logger sLogger = Logger.getLogger(As2Message.class);
 	
 	private MimeBodyPart data;
@@ -45,6 +49,11 @@ public class As2Message {
 	private String encryptCertKeyPassword;
 	private String encryptCertAlias;
 	private String compressionAlgorithm;
+	private boolean mdn;
+	private String mdnType;
+	private String asynchronousMdnUrl;
+	private boolean requestSignedMdn;
+	private String mdnSigningAlgorithm;
 	
 	private Map<String, String> headers;
 	
@@ -91,11 +100,12 @@ public class As2Message {
 		}
 	}
 	
-	public MimeBodyPart packageMessage(As2ProtocolSettings settings) throws Exception {
+	public void packageMessage(IProtocolSettings settings) throws Exception {
+		As2ProtocolSettings as2Settings = (As2ProtocolSettings) settings;
 		sLogger.debug("Packaging As2 message...");
 		
-		fromAddress= settings.getFrom();
-		toAddress = settings.getTo();
+		fromAddress= as2Settings.getFrom();
+		toAddress = as2Settings.getTo();
 		
 		resolveParties(toAddress, fromAddress);
 		
@@ -103,12 +113,12 @@ public class As2Message {
         sign = localParty.isSigningEnabled();
         compress = localParty.isCompressionEnabled();
         
-        if(settings.isEncryptionEnforced() && !encrypt) {
+        if(as2Settings.isEncryptionEnforced() && !encrypt) {
         	throw new ProtocolException("Encryption for transport is enforced, however party with id [" + 
         			localParty.getPartyId() + "] doesn't have encryption enabled. Message will be rejected.");
         }
         
-        if(settings.isSigningEnforced() && !sign) {
+        if(as2Settings.isSigningEnforced() && !sign) {
         	throw new ProtocolException("Signing for transport is enforced, however party with id [" + 
         			localParty.getPartyId() + "] doesn't have signing enabled. Message will be rejected.");
         }
@@ -119,13 +129,20 @@ public class As2Message {
         encryptAlgorithm = localParty.getEncryptAlgorithm();
         encryptCertAlias = remoteParty.getEncryptCertAlias();
         compressionAlgorithm = localParty.getCompressionAlgorithm();
+        mdn = localParty.isRequestMdn();
+        mdnType = localParty.getMdnType();
+    	asynchronousMdnUrl = localParty.getAsynchronousMdnUrl();
+    	requestSignedMdn = localParty.isRequestSignedMdn();
+    	mdnSigningAlgorithm = localParty.getMdnSigningAlgorithm();
         
 		messageId = Utils.generateMessageID(fromAddress);
         
 		data.setHeader(As2HeaderDictionary.CONTENT_TYPE, As2HeaderDictionary.MIME_TYPE_APPLICATION_OCTET_STREAM);
 		data.setHeader(As2HeaderDictionary.CONTENT_TRANSFER_ENCODING, As2HeaderDictionary.TRANSFER_ENCODING_BINARY);
 
-		calculateMIC("sha1");
+		if(mdn) {
+			calculateMIC(mdnSigningAlgorithm);
+		}
 		
 		secure();
 		
@@ -147,9 +164,24 @@ public class As2Message {
         headers.put(As2HeaderDictionary.FROM, fromEmail);
         headers.put(As2HeaderDictionary.SUBJECT, subject);
         
-        sLogger.debug("As2 message successfully packaged.");
+        if(mdn) {
+        	sLogger.debug("MDN is requested - adding appropriate headers.");
+        	headers.put(As2HeaderDictionary.DISPOSITION_NOTIFICATION_TO, fromEmail);
+        	
+        	if(ConfigurationConstants.MDN_TYPE_ASYNCHRONOUS.equals(mdnType)) {
+        		headers.put(As2HeaderDictionary.RECEIPT_DELIVERY_OPTIONS, asynchronousMdnUrl);
+        	}
+        	
+        	if(requestSignedMdn) {
+        		headers.put(As2HeaderDictionary.DISPOSITION_NOTIFICATION_OPTIONS, 
+        				"signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, " + mdnSigningAlgorithm);
+        	}
+        	
+        	IMdnMonitor mdnMonitor = Factory.getInstance().getMdnMonitor();
+        	mdnMonitor.registerMessage(mic, this);
+        }
         
-        return data;
+        sLogger.debug("As2 message successfully packaged.");
 	}
 	
 	protected void secure() throws Exception {
@@ -182,7 +214,8 @@ public class As2Message {
         }
     }
 	
-	public MimeBodyPart unpackageMessage(As2ProtocolSettings settings) throws Exception {
+	public void unpackageMessage(IProtocolSettings settings) throws Exception {
+		As2ProtocolSettings as2Settings = (As2ProtocolSettings) settings;
 		sLogger.debug("Unpackaging As2 message...");
 		
 		fromAddress= headers.get(As2HeaderDictionary.AS2_FROM);
@@ -194,8 +227,8 @@ public class As2Message {
 			throw new ProtocolException(As2HeaderDictionary.AS2_TO + " header is empty. Unknown sender - rejecting the message.");
 		}
 		
-		if(!settings.getTo().equals(toAddress)) {
-			throw new ProtocolException("Expected to receive a message for party with Id [" + settings.getTo() + 
+		if(!as2Settings.getTo().equals(toAddress)) {
+			throw new ProtocolException("Expected to receive a message for party with Id [" + as2Settings.getTo() + 
 					"], but received [" + toAddress+ "]. Message will be rejected.");
 		}
 		
@@ -218,13 +251,11 @@ public class As2Message {
         encryptCertAlias = localParty.getEncryptCertAlias();
         encryptCertKeyPassword = localParty.getEncryptCertKeyPassword();
         
-        decryptAndVerify(settings.isEncryptionEnforced(), settings.isSigningEnforced());
+        decryptAndVerify(as2Settings.isEncryptionEnforced(), as2Settings.isSigningEnforced());
         
         calculateMIC("sha1");
         
 		sLogger.debug("As2 message successfully unpackaged.");
-		
-		return data;
 		
 	}
 	
