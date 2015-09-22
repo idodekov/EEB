@@ -20,6 +20,10 @@ public class Party extends HashMap<String, Object> implements IParty {
 		put(PartySettingsKeyring.ENCRYPT_ALGORITHM, "3des");
 		put(PartySettingsKeyring.COMPRESS, Boolean.toString(false));
 		put(PartySettingsKeyring.COMPRESS_ALGORITHM, "zlib");
+		put(PartySettingsKeyring.REQUEST_MDN, "false");
+		put(PartySettingsKeyring.MDN_TYPE, "synhronous");
+		put(PartySettingsKeyring.REQUEST_SIGNED_MDN, "false");
+		put(PartySettingsKeyring.MDN_SIGNING_ALGORITHM, "sha1");
 	}
 	
 	@Override
@@ -111,6 +115,46 @@ public class Party extends HashMap<String, Object> implements IParty {
     public void setCompressionAlgorithm(String alg) {
         put(PartySettingsKeyring.COMPRESS_ALGORITHM, alg);
     }
+    
+    public boolean isRequestMdn() {
+    	return Boolean.parseBoolean((String) get(PartySettingsKeyring.REQUEST_MDN));
+    }
+    
+    public void setRequestMdn(boolean requestMdn) {
+    	put(PartySettingsKeyring.REQUEST_MDN, Boolean.toString(requestMdn));
+    }
+    
+    public String getMdnType() {
+        return (String) get(PartySettingsKeyring.MDN_TYPE);
+    }
+    
+    public void setMdnType(String mdnType) {
+        put(PartySettingsKeyring.MDN_TYPE, mdnType);
+    }
+    
+    public String getAsynchronousMdnUrl() {
+        return (String) get(PartySettingsKeyring.ASYNCHRONOUS_MDN_URL);
+    }
+    
+    public void setAsynchronousMdnUrl(String asynchronousMdnUrl) {
+        put(PartySettingsKeyring.ASYNCHRONOUS_MDN_URL, asynchronousMdnUrl);
+    }
+    
+    public boolean isRequestSignedMdn() {
+    	return Boolean.parseBoolean((String) get(PartySettingsKeyring.REQUEST_SIGNED_MDN));
+    }
+    
+    public void setRequestSignedMdn(boolean requestSignedMdn) {
+    	put(PartySettingsKeyring.REQUEST_SIGNED_MDN, Boolean.toString(requestSignedMdn));
+    }
+    
+    public String getMdnSigningAlgorithm() {
+        return (String) get(PartySettingsKeyring.MDN_SIGNING_ALGORITHM);
+    }
+    
+    public void setMdnSigningAlgorithm(String mdnSigningAlgorithm) {
+        put(PartySettingsKeyring.MDN_SIGNING_ALGORITHM, mdnSigningAlgorithm);
+    }
 
 	public class PartySettingsKeyring {
         public static final String SIGN_CERT_ALIAS = "signCertAlias";
@@ -124,6 +168,11 @@ public class Party extends HashMap<String, Object> implements IParty {
 	    public static final String ENCRYPT_ALGORITHM = "encryptAlgorithm";
 	    public static final String COMPRESS = "compress";
 	    public static final String COMPRESS_ALGORITHM = "compressAlgorithm";
+	    public static final String REQUEST_MDN = "requestMdn";
+	    public static final String MDN_TYPE = "mdnType";
+	    public static final String ASYNCHRONOUS_MDN_URL = "asynchronousMdnUrl";
+	    public static final String REQUEST_SIGNED_MDN = "requestSignedMdn";
+	    public static final String MDN_SIGNING_ALGORITHM = "mdnSigningAlgorithm";
     }
 	
 }
