@@ -52,7 +52,13 @@ public class As2InMemoryMdnMonitor implements IMdnMonitor {
 
 	@Override
 	public void confirmAndDeregisterMessage(String uniqueId) {
-		sLogger.info("Message with MIC [" + uniqueId + "] has been confirmed with a receipt.");
+		As2Message message = unconfirmedMessages.get(uniqueId);
+		if(message == null) {
+			sLogger.error("Attempting to confirm message with MIC [" + uniqueId + "], however such message doesn't exist.");
+			return;
+		}
+		
+		sLogger.info("Message with MIC [" + uniqueId + "] and MessageId [" + message.getMessageId() + "] has been confirmed with a receipt.");
 		unconfirmedMessages.remove(uniqueId);
 	}
 }

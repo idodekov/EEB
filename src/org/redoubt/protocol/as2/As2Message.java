@@ -164,22 +164,7 @@ public class As2Message implements IMessage {
         headers.put(As2HeaderDictionary.FROM, fromEmail);
         headers.put(As2HeaderDictionary.SUBJECT, subject);
         
-        if(mdn) {
-        	sLogger.debug("MDN is requested - adding appropriate headers.");
-        	headers.put(As2HeaderDictionary.DISPOSITION_NOTIFICATION_TO, fromEmail);
-        	
-        	if(ConfigurationConstants.MDN_TYPE_ASYNCHRONOUS.equals(mdnType)) {
-        		headers.put(As2HeaderDictionary.RECEIPT_DELIVERY_OPTIONS, asynchronousMdnUrl);
-        	}
-        	
-        	if(requestSignedMdn) {
-        		headers.put(As2HeaderDictionary.DISPOSITION_NOTIFICATION_OPTIONS, 
-        				"signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, " + mdnSigningAlgorithm);
-        	}
-        	
-        	IMdnMonitor mdnMonitor = Factory.getInstance().getMdnMonitor();
-        	mdnMonitor.registerMessage(mic, this);
-        }
+        prepreOutboundMdnOptions();
         
         sLogger.debug("As2 message successfully packaged.");
 	}
@@ -213,6 +198,25 @@ public class As2Message implements IMessage {
             }
         }
     }
+	
+	protected void prepreOutboundMdnOptions() {
+		if(mdn) {
+        	sLogger.debug("MDN is requested - adding appropriate headers.");
+        	headers.put(As2HeaderDictionary.DISPOSITION_NOTIFICATION_TO, fromEmail);
+        	
+        	if(ConfigurationConstants.MDN_TYPE_ASYNCHRONOUS.equals(mdnType)) {
+        		headers.put(As2HeaderDictionary.RECEIPT_DELIVERY_OPTIONS, asynchronousMdnUrl);
+        	}
+        	
+        	if(requestSignedMdn) {
+        		headers.put(As2HeaderDictionary.DISPOSITION_NOTIFICATION_OPTIONS, 
+        				"signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, " + mdnSigningAlgorithm);
+        	}
+        	
+        	IMdnMonitor mdnMonitor = Factory.getInstance().getMdnMonitor();
+        	mdnMonitor.registerMessage(mic, this);
+        }
+	}
 	
 	public void unpackageMessage(IProtocolSettings settings) throws Exception {
 		As2ProtocolSettings as2Settings = (As2ProtocolSettings) settings;
