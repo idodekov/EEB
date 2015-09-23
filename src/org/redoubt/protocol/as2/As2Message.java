@@ -30,7 +30,7 @@ import org.redoubt.application.VersionInformation;
 import org.redoubt.application.configuration.ConfigurationConstants;
 import org.redoubt.application.configuration.Party;
 import org.redoubt.protocol.ProtocolException;
-import org.redoubt.protocol.as2.mdn.As2MdnMessage;
+import org.redoubt.protocol.as2.mdn.Disposition;
 import org.redoubt.util.FileSystemUtils;
 import org.redoubt.util.Utils;
 
@@ -55,6 +55,7 @@ public class As2Message implements IMessage {
 	private String asynchronousMdnUrl;
 	private boolean requestSignedMdn;
 	private String mdnSigningAlgorithm;
+	private Disposition disposition;
 	
 	private Map<String, String> headers;
 	
@@ -70,11 +71,13 @@ public class As2Message implements IMessage {
 	public As2Message() {
 		data = new MimeBodyPart();
 		headers = new HashMap<String, String>();
+		disposition = new Disposition();
 	}
 	
 	public As2Message(Path payload, InternetHeaders internetHeaders) throws MessagingException, IOException {
 		data = new MimeBodyPart();
 		headers = new HashMap<String, String>();
+		disposition = new Disposition();
 		
 		// TODO: add support for large files
 		data.setDataHandler(new DataHandler(new ByteArrayDataSource(Files.readAllBytes(payload), 
@@ -86,6 +89,7 @@ public class As2Message implements IMessage {
 	public As2Message(byte[] content, InternetHeaders internetHeaders) throws MessagingException {
 		data = new MimeBodyPart(internetHeaders, content);
 		headers = new HashMap<String, String>();
+		disposition = new Disposition();
 		
 		populateHeaders(internetHeaders);
 	}
@@ -231,24 +235,29 @@ public class As2Message implements IMessage {
 		
 		fromAddress= headers.get(As2HeaderDictionary.AS2_FROM);
 		if(Utils.isNullOrEmptyTrimmed(fromAddress)) {
+			disposition.setStatus(Disposition.DISP_AUTHENTICATION_FAILED);
 			throw new ProtocolException(As2HeaderDictionary.AS2_FROM + " header is empty. Unknown sender - rejecting the message.");
 		}
 		toAddress = headers.get(As2HeaderDictionary.AS2_TO);
 		if(Utils.isNullOrEmptyTrimmed(toAddress)) {
+			disposition.setStatus(Disposition.DISP_AUTHENTICATION_FAILED);
 			throw new ProtocolException(As2HeaderDictionary.AS2_TO + " header is empty. Unknown sender - rejecting the message.");
 		}
 		
 		if(!as2Settings.getTo().equals(toAddress)) {
+			disposition.setStatus(Disposition.DISP_AUTHENTICATION_FAILED);
 			throw new ProtocolException("Expected to receive a message for party with Id [" + as2Settings.getTo() + 
 					"], but received [" + toAddress+ "]. Message will be rejected.");
 		}
 		
 		if(fromAddress.equalsIgnoreCase(toAddress)) {
+			disposition.setStatus(Disposition.DISP_AUTHENTICATION_FAILED);
 			throw new ProtocolException(As2HeaderDictionary.AS2_TO + " header can't be equal to [" + As2HeaderDictionary.AS2_FROM + "].");
 		}
 		
 		messageId = Utils.parseMessageID(headers.get(As2HeaderDictionary.MESSAGE_ID));
 		if(Utils.isNullOrEmptyTrimmed(messageId)) {
+			disposition.setStatus(Disposition.DISP_AUTHENTICATION_FAILED);
 			throw new ProtocolException(As2HeaderDictionary.MESSAGE_ID + " header can't be empty. Unknown message id - rejecting the message.");
 		}
 		
@@ -271,6 +280,7 @@ public class As2Message implements IMessage {
         }
         calculateMIC(mdnSigningAlgorithm);
         
+        disposition.setStatus(Disposition.DISP_PROCESSED);
 		sLogger.debug("As2 message successfully unpackaged.");
 		
 	}
@@ -284,11 +294,18 @@ public class As2Message implements IMessage {
 	
             X509Certificate receiverCert = certificateManager.getX509Certificate(encryptCertAlias);
             PrivateKey receiverKey = certificateManager.getPrivateKey(encryptCertAlias, encryptCertKeyPassword.toCharArray());
-            data = cryptoHelper.decrypt(data, receiverCert, receiverKey);
+            try {
+            	data = cryptoHelper.decrypt(data, receiverCert, receiverKey);
+		    } catch(Exception e) {
+	        	disposition.setStatus(Disposition.DISP_DECRYPTION_FAILED);
+	        	sLogger.error("An error has occured while decrypting message. " + e.getMessage());
+	        	throw new ProtocolException(e.getMessage(), e);
+	        }
             sLogger.debug("Message is decrypted.");
         } else {
         	if(encryptionEnforced) {
         		//Encryption is enforced
+        		disposition.setStatus(Disposition.DISP_INSUFFICIENT_SECURITY);
         		throw new ProtocolException("Encryption is enabled, however the message doesn't appear to be encrypted. Will reject it.");
         	}
         }
@@ -298,11 +315,19 @@ public class As2Message implements IMessage {
    			sLogger.debug("Message is signed - will attempt to verify the signature.");
 	
    			X509Certificate senderCert = certificateManager.getX509Certificate(signCertAlias);
-   			data = cryptoHelper.verify(data, senderCert);
+   			try {
+   				data = cryptoHelper.verify(data, senderCert);
+   			} catch(Exception e) {
+            	disposition.setStatus(Disposition.DISP_SIGNATURE_FAILED);
+            	sLogger.error("An error has occured while verifying message signature. " + e.getMessage());
+            	throw new ProtocolException(e.getMessage(), e);
+            }
+   			
    			sLogger.debug("Signature verified.");
         } else {
         	if(signingEnforced) {
         		//Signing is enforced
+        		disposition.setStatus(Disposition.DISP_INSUFFICIENT_SECURITY);
         		throw new ProtocolException("Signing is enabled, however the message doesn't appear to be signed. Will reject it.");
         	}
         }
@@ -391,14 +416,30 @@ public class As2Message implements IMessage {
 		}
     }
 	
-	public As2MdnMessage generateMdnMessage() {
-		As2MdnMessage message = new As2MdnMessage();
-		message.setMic(mic);
-		message.setFromAddres(toAddress);
-		message.setToAddres(fromAddress);
-		return message;
+	public Disposition getDisposition() {
+		return disposition;
 	}
-	
+
+	public void setDisposition(Disposition disposition) {
+		this.disposition = disposition;
+	}
+
+	public Party getLocalParty() {
+		return localParty;
+	}
+
+	public void setLocalParty(Party localParty) {
+		this.localParty = localParty;
+	}
+
+	public Party getRemoteParty() {
+		return remoteParty;
+	}
+
+	public void setRemoteParty(Party remoteParty) {
+		this.remoteParty = remoteParty;
+	}
+
 	public boolean isMdnReqested() {
 		return mdn;
 	}

@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import org.redoubt.api.protocol.TransferContext;
 import org.redoubt.protocol.BaseProtocol;
 import org.redoubt.protocol.ProtocolException;
+import org.redoubt.protocol.as2.mdn.As2MdnMessage;
 import org.redoubt.transport.TransportConstants;
 import org.redoubt.util.FileSystemUtils;
 
@@ -19,6 +20,8 @@ public class As2Protocol extends BaseProtocol {
     @Override
     public void receive(TransferContext context) throws ProtocolException {
         As2ProtocolSettings settings = (As2ProtocolSettings) getSettings();
+        As2Message message = null;
+        
         try {
 	        Path productionFolder = settings.getProductionFolder();
 	        String fullTarget = (String) context.get(TransportConstants.CONTEXT_FULL_TARGET);
@@ -28,7 +31,7 @@ public class As2Protocol extends BaseProtocol {
 	        
 	        InternetHeaders headers = (InternetHeaders) context.get(TransportConstants.CONTEXT_HEADER_MAP);
 	        
-	        As2Message message = new As2Message(Files.readAllBytes(workFile), headers);
+	        message = new As2Message(Files.readAllBytes(workFile), headers);
 	        message.unpackageMessage(settings);
 	        
 	        message.writeMimeDataToFile(workFile);
@@ -36,12 +39,14 @@ public class As2Protocol extends BaseProtocol {
 	        Path productionFile = Paths.get(productionFolder.toString(), workFile.getFileName().toString());
 	        message.writeMimeDataToFile(productionFile);
 	        
-	        if(message.isMdnReqested()) {
-	        	
-	        }
         } catch (Exception e) {
             sLogger.error("An error has occured while unpackaging As2 message. " + e.getMessage(), e);
             throw new ProtocolException(e.getMessage(), e);
+        } finally {
+        	if(message != null && message.isMdnReqested()) {
+	        	As2MdnMessage mdn = new As2MdnMessage(message);
+	        	//TODO
+	        }
         }
     }
     
