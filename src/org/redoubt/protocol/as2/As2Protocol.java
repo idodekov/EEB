@@ -44,8 +44,17 @@ public class As2Protocol extends BaseProtocol {
             throw new ProtocolException(e.getMessage(), e);
         } finally {
         	if(message != null && message.isMdnReqested()) {
+        		//TODO: dont send in a new connection - send as HTTP response
 	        	As2MdnMessage mdn = new As2MdnMessage(message);
-	        	//TODO
+	        	String mdnType = mdn.getMdnType();
+	        	TransferContext sendContext = new TransferContext();
+	        	sendContext.put(TransportConstants.CONTEXT_MDN_TRANSFER, Boolean.TRUE);
+	        	sendContext.put(TransportConstants.CONTEXT_MDN, mdn);
+	        	Path workFile = FileSystemUtils.createWorkFile();
+	        	sendContext.put(TransportConstants.CONTEXT_FULL_TARGET, workFile.toString());
+	        	send(sendContext);
+	        	FileSystemUtils.backupFile(workFile);
+	        	FileSystemUtils.removeWorkFile(workFile);
 	        }
         }
     }
@@ -54,14 +63,23 @@ public class As2Protocol extends BaseProtocol {
     public void send(TransferContext context) throws ProtocolException {
         As2ProtocolSettings settings = (As2ProtocolSettings) getSettings();
         try {
+        	As2Message message = null;
+        	
         	String fullTarget = (String) context.get(TransportConstants.CONTEXT_FULL_TARGET);
         	Path workFile = Paths.get(fullTarget);
+        	Boolean mdnTransfer = (Boolean) context.get(TransportConstants.CONTEXT_MDN_TRANSFER);
+        	if(mdnTransfer != null) {
+        		message = (As2Message) context.get(TransportConstants.CONTEXT_MDN);
+        	} else {
+            	FileSystemUtils.checkAs2SizeRestrictions(workFile);
+            	
+            	message = new As2Message(workFile, null);
+        	}
         	
-        	FileSystemUtils.checkAs2SizeRestrictions(workFile);
-        	
-        	As2Message message = new As2Message(workFile, null);
         	message.packageMessage(settings);
         	message.writeMimeDataToFile(workFile);
+        	
+        	FileSystemUtils.checkAs2SizeRestrictions(workFile);
             
             HttpClientUtils.sendPostRequest(settings, workFile, message.getHeaders());
         }  catch (Exception e) {

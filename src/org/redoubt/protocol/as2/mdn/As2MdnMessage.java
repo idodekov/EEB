@@ -9,24 +9,15 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
 
 import org.redoubt.api.protocol.IProtocolSettings;
+import org.redoubt.protocol.as2.As2HeaderDictionary;
 import org.redoubt.protocol.as2.As2Message;
 
 public class As2MdnMessage extends As2Message {
-	// report multipart content type
-    public static final String REPORT_SUBTYPE = "report; report-type=disposition-notification";
-    public static final String REPORT_TYPE = "multipart/" + REPORT_SUBTYPE;
-    // text part content header
-    public static final String TEXT_TYPE = "text/plain";
-    public static final String TEXT_CHARSET = "us-ascii";
-    public static final String TEXT_ENCODING = "7bit";
-    // disposition content header
-    public static final String DISPOSITION_TYPE = "message/disposition-notification";
-    public static final String DISPOSITION_CHARSET = "us-ascii";
-    public static final String DISPOSITION_ENCODING = "7bit";
-    
     private String originalMessageId;
+    private String text;
     
     public As2MdnMessage(As2Message message) {
+    	super();
     	setMic(message.getMic());
 		setFromAddres(message.getToAddress());
 		setToAddres(message.getFromAddress());
@@ -44,48 +35,45 @@ public class As2MdnMessage extends As2Message {
 	
 	@Override
 	public void packageMessage(IProtocolSettings settings) throws Exception {
-		try {
-            MimeMultipart multipart = createReportPart();
+        MimeMultipart multipart = new MimeMultipart();
+        multipart.setSubType(As2HeaderDictionary.MIME_SUBTYPE_REPORT);
+        
+        MimeBodyPart textPart = createTextPart();
+        multipart.addBodyPart(textPart);
 
-            MimeBodyPart dispositionPart = createDispositionPart();
-            multipart.addBodyPart(dispositionPart);
+        MimeBodyPart dispositionPart = createDispositionPart();
+        multipart.addBodyPart(dispositionPart);
 
-            MimeBodyPart textPart = createTextPart();
-            multipart.addBodyPart(textPart);
-
-            getData().setContent(multipart);
-            getData().setHeader("Content-Type", multipart.getContentType());
+        getData().setContent(multipart);
+        getData().setHeader(As2HeaderDictionary.CONTENT_TYPE, multipart.getContentType());
             
-            setSignCertAlias(getLocalParty().getSignCertAlias());
-    		setSignCertKeyPassword(getLocalParty().getSignCertKeyPassword());
+        setSignCertAlias(getLocalParty().getSignCertAlias());
+    	setSignCertKeyPassword(getLocalParty().getSignCertKeyPassword());
     		
-    		if(isRequestSignedMdn()) {
-    			setSign(true);
-    			setEncrypt(false);
-    			setCompress(false);
-    			setSignDigestAlgorithm(getMdnSigningAlgorithm());
-    			secure();
-    		}
-        } catch (IOException ioe) {
-            throw new MessagingException("Error creating data: " + ioe.getMessage());
-        }
+    	if(isRequestSignedMdn()) {
+    		setSign(true);
+    		setEncrypt(false);
+    		setCompress(false);
+    		setSignDigestAlgorithm(getMdnSigningAlgorithm());
+    		secure();
+    	}
 	}
 
 	@Override
 	public void unpackageMessage(IProtocolSettings settings) throws Exception {
 		// TODO Auto-generated method stub
-		super.unpackageMessage(settings);
+		//super.unpackageMessage(settings);
 	}
 
 	protected MimeBodyPart createDispositionPart() throws IOException, MessagingException {
         MimeBodyPart dispositionPart = new MimeBodyPart();
 
         InternetHeaders dispValues = new InternetHeaders();
-        dispValues.setHeader("Original-Recipient", "rfc822; " + getFromAddress());
-        dispValues.setHeader("Final-Recipient", "rfc822; " + getFromAddress());
-        dispValues.setHeader("Original-Message-ID", getOriginalMessageId());
-        dispValues.setHeader("Disposition", getDisposition().getStatus());
-        dispValues.setHeader("Received-Content-MIC", getMic());
+        dispValues.setHeader(As2HeaderDictionary.ORIGINAL_RECIPIENT, "rfc822; " + getFromAddress());
+        dispValues.setHeader(As2HeaderDictionary.FINAL_RECIPIENT, "rfc822; " + getFromAddress());
+        dispValues.setHeader(As2HeaderDictionary.ORIGINAL_MESSAGE_ID, getOriginalMessageId());
+        dispValues.setHeader(As2HeaderDictionary.DISPOSITION, getDisposition().getStatus());
+        dispValues.setHeader(As2HeaderDictionary.RECEIVED_CONTENT_MIC, getMic());
 
         Enumeration dispEnum = dispValues.getAllHeaderLines();
         StringBuffer dispData = new StringBuffer();
@@ -97,31 +85,24 @@ public class As2MdnMessage extends As2Message {
         dispData.append("\r\n");
 
         String dispText = dispData.toString();
-        dispositionPart.setContent(dispText, DISPOSITION_TYPE);
-        dispositionPart.setHeader("Content-Type", DISPOSITION_TYPE);
+        dispositionPart.setContent(dispText, As2HeaderDictionary.MIME_TYPE_DISPOSITION_NOTIFICATION);
+        dispositionPart.setHeader(As2HeaderDictionary.CONTENT_TYPE, As2HeaderDictionary.MIME_TYPE_DISPOSITION_NOTIFICATION);
 
         return dispositionPart;
-    }
-
-    protected MimeMultipart createReportPart() throws MessagingException {
-        MimeMultipart reportParts = new MimeMultipart();
-        reportParts.setSubType(REPORT_SUBTYPE);
-
-        return reportParts;
     }
 	
 	protected MimeBodyPart createTextPart() throws IOException, MessagingException {
         MimeBodyPart textPart = new MimeBodyPart();        
         
-        String text = "The message sent to Recipient [" + getFromAddress() + "] on [" + getMessageDate() + "]\r\n" + 
+        text = "The message sent to Recipient [" + getFromAddress() + "] on [" + getMessageDate() + "]\r\n" + 
         "with Subject [" + getSubject() + "] and Id [" + getOriginalMessageId() + "] has been received.\r\n" +
         "In addition, the sender of the message, [" + getToAddress() + "] was authenticated\r\n" + 
         "as the originator of the message.\r\n" +
         "This is not a guarantee that the message has been completely processed or\r\n" +
         "understood by the receiving party.\r\n";
         
-        textPart.setContent(text, TEXT_TYPE);
-        textPart.setHeader("Content-Type", TEXT_TYPE);        
+        textPart.setContent(text, As2HeaderDictionary.MIME_TYPE_TEXT_PLAIN_US_ASCII);
+        textPart.setHeader(As2HeaderDictionary.CONTENT_TYPE, As2HeaderDictionary.MIME_TYPE_TEXT_PLAIN_US_ASCII);
 
         return textPart;
     }

@@ -233,6 +233,8 @@ public class As2Message implements IMessage {
 		As2ProtocolSettings as2Settings = (As2ProtocolSettings) settings;
 		sLogger.debug("Unpackaging As2 message...");
 		
+		prepreInboundMdnOptions();
+		
 		fromAddress= headers.get(As2HeaderDictionary.AS2_FROM);
 		if(Utils.isNullOrEmptyTrimmed(fromAddress)) {
 			disposition.setStatus(Disposition.DISP_AUTHENTICATION_FAILED);
@@ -272,8 +274,6 @@ public class As2Message implements IMessage {
         encryptCertKeyPassword = localParty.getEncryptCertKeyPassword();
         
         decryptAndVerify(as2Settings.isEncryptionEnforced(), as2Settings.isSigningEnforced());
-        
-        prepreInboundMdnOptions();
         
         if(Utils.isNullOrEmptyTrimmed(mdnSigningAlgorithm)) {
         	mdnSigningAlgorithm = ICryptoHelper.DIGEST_SHA1;

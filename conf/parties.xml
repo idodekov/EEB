@@ -20,6 +20,7 @@
 	<Party>
 		<Setting name="partyId">beta</Setting>
 		<Setting name="signCertAlias">sign1</Setting>
+		<Setting name="signCertKeyPassword">redoubt</Setting>
 		<Setting name="encryptCertAlias">encrypt1</Setting>
 		<Setting name="encryptCertKeyPassword">redoubt</Setting>
 	</Party>
