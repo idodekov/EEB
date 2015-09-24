@@ -37,36 +37,36 @@ import org.redoubt.util.Utils;
 public class As2Message implements IMessage {
 	private static final Logger sLogger = Logger.getLogger(As2Message.class);
 	
-	private MimeBodyPart data;
-	private String toAddress;
-	private String fromAddress;
-	private boolean encrypt;
-	private boolean sign;
-	private boolean compress;
-	private String signCertAlias;
-	private String signCertKeyPassword;
-	private String signDigestAlgorithm;
-	private String encryptAlgorithm;
-	private String encryptCertKeyPassword;
-	private String encryptCertAlias;
-	private String compressionAlgorithm;
-	private boolean mdn;
-	private String mdnType;
-	private String asynchronousMdnUrl;
-	private boolean requestSignedMdn;
-	private String mdnSigningAlgorithm;
-	private Disposition disposition;
+	protected MimeBodyPart data;
+	protected String toAddress;
+	protected String fromAddress;
+	protected boolean encrypt;
+	protected boolean sign;
+	protected boolean compress;
+	protected String signCertAlias;
+	protected String signCertKeyPassword;
+	protected String signDigestAlgorithm;
+	protected String encryptAlgorithm;
+	protected String encryptCertKeyPassword;
+	protected String encryptCertAlias;
+	protected String compressionAlgorithm;
+	protected boolean mdn;
+	protected String mdnType;
+	protected String asynchronousMdnUrl;
+	protected boolean requestSignedMdn;
+	protected String mdnSigningAlgorithm;
+	protected Disposition disposition;
 	
-	private Map<String, String> headers;
+	protected Map<String, String> headers;
 	
-	private String messageId;
-	private String messageDate;
-	private String subject;
-	private String fromEmail;
-	private String mic;
+	protected String messageId;
+	protected String messageDate;
+	protected String subject;
+	protected String fromEmail;
+	protected String mic;
 	
-	private Party localParty;
-	private Party remoteParty;
+	protected Party localParty;
+	protected Party remoteParty;
 	
 	public As2Message() {
 		data = new MimeBodyPart();

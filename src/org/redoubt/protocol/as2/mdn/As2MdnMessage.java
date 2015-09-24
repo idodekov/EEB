@@ -9,8 +9,10 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
 
 import org.redoubt.api.protocol.IProtocolSettings;
+import org.redoubt.application.VersionInformation;
 import org.redoubt.protocol.as2.As2HeaderDictionary;
 import org.redoubt.protocol.as2.As2Message;
+import org.redoubt.util.Utils;
 
 public class As2MdnMessage extends As2Message {
     private String originalMessageId;
@@ -18,18 +20,18 @@ public class As2MdnMessage extends As2Message {
     
     public As2MdnMessage(As2Message message) {
     	super();
-    	setMic(message.getMic());
-		setFromAddres(message.getToAddress());
-		setToAddres(message.getFromAddress());
-		setAsynchronousMdnUrl(message.getAsynchronousMdnUrl());
-		setMdnType(message.getMdnType());
-		setMdnSigningAlgorithm(message.getMdnSigningAlgorithm());
-		setRequestSignedMdn(message.isRequestSignedMdn());
-		setLocalParty(message.getLocalParty());
-		setRemoteParty(message.getRemoteParty());
-		setMessageDate(message.getMessageDate());
-		setSubject(message.getSubject());
-		setDisposition(message.getDisposition());
+    	mic = message.getMic();
+		fromAddress = message.getToAddress();
+		toAddress = message.getFromAddress();
+		asynchronousMdnUrl = message.getAsynchronousMdnUrl();
+		mdnType = message.getMdnType();
+		mdnSigningAlgorithm = message.getMdnSigningAlgorithm();
+		requestSignedMdn = message.isRequestSignedMdn();
+		localParty = message.getLocalParty();
+		remoteParty = message.getRemoteParty();
+		messageDate = message.getMessageDate();
+		subject = message.getSubject();
+		disposition = message.getDisposition();
 		originalMessageId = message.getMessageId();
 	}
 	
@@ -44,11 +46,25 @@ public class As2MdnMessage extends As2Message {
         MimeBodyPart dispositionPart = createDispositionPart();
         multipart.addBodyPart(dispositionPart);
 
-        getData().setContent(multipart);
-        getData().setHeader(As2HeaderDictionary.CONTENT_TYPE, multipart.getContentType());
+        data.setContent(multipart);
+        data.setHeader(As2HeaderDictionary.CONTENT_TYPE, multipart.getContentType());
             
-        setSignCertAlias(getLocalParty().getSignCertAlias());
-    	setSignCertKeyPassword(getLocalParty().getSignCertKeyPassword());
+        signCertAlias = getLocalParty().getSignCertAlias();
+    	signCertKeyPassword = getLocalParty().getSignCertKeyPassword();
+    	
+    	String contentType = Utils.normalizeContentType(data.getContentType());
+        headers.put(As2HeaderDictionary.CONTENT_TYPE, contentType);
+        headers.put(As2HeaderDictionary.AS2_FROM, fromAddress);
+        headers.put(As2HeaderDictionary.AS2_TO, toAddress);
+        headers.put(As2HeaderDictionary.AS2_VERSION, As2HeaderDictionary.AS2_VERSION_1_1);
+        headers.put(As2HeaderDictionary.CONNECTION, "close");
+        headers.put(As2HeaderDictionary.USER_AGENT, VersionInformation.APP_NAME + " " + VersionInformation.APP_VERSION);
+        headers.put(As2HeaderDictionary.ACCEPT_ENCODING, "gzip,deflate");
+        headers.put(As2HeaderDictionary.MIME_VERSION, As2HeaderDictionary.MIME_VERSION_1_0);
+        headers.put(As2HeaderDictionary.DATE, messageDate);
+        headers.put(As2HeaderDictionary.MESSAGE_ID, "<" + messageId + ">");
+        headers.put(As2HeaderDictionary.FROM, fromEmail);
+        headers.put(As2HeaderDictionary.SUBJECT, subject);
     		
     	if(isRequestSignedMdn()) {
     		setSign(true);
@@ -69,12 +85,13 @@ public class As2MdnMessage extends As2Message {
         MimeBodyPart dispositionPart = new MimeBodyPart();
 
         InternetHeaders dispValues = new InternetHeaders();
-        dispValues.setHeader(As2HeaderDictionary.ORIGINAL_RECIPIENT, "rfc822; " + getFromAddress());
-        dispValues.setHeader(As2HeaderDictionary.FINAL_RECIPIENT, "rfc822; " + getFromAddress());
-        dispValues.setHeader(As2HeaderDictionary.ORIGINAL_MESSAGE_ID, getOriginalMessageId());
-        dispValues.setHeader(As2HeaderDictionary.DISPOSITION, getDisposition().getStatus());
-        dispValues.setHeader(As2HeaderDictionary.RECEIVED_CONTENT_MIC, getMic());
+        dispValues.setHeader(As2HeaderDictionary.ORIGINAL_RECIPIENT, "rfc822; " + fromAddress);
+        dispValues.setHeader(As2HeaderDictionary.FINAL_RECIPIENT, "rfc822; " + fromAddress);
+        dispValues.setHeader(As2HeaderDictionary.ORIGINAL_MESSAGE_ID, originalMessageId);
+        dispValues.setHeader(As2HeaderDictionary.DISPOSITION, disposition.getStatus());
+        dispValues.setHeader(As2HeaderDictionary.RECEIVED_CONTENT_MIC, mic);
 
+        @SuppressWarnings("rawtypes")
         Enumeration dispEnum = dispValues.getAllHeaderLines();
         StringBuffer dispData = new StringBuffer();
 
@@ -94,9 +111,9 @@ public class As2MdnMessage extends As2Message {
 	protected MimeBodyPart createTextPart() throws IOException, MessagingException {
         MimeBodyPart textPart = new MimeBodyPart();        
         
-        text = "The message sent to Recipient [" + getFromAddress() + "] on [" + getMessageDate() + "]\r\n" + 
-        "with Subject [" + getSubject() + "] and Id [" + getOriginalMessageId() + "] has been received.\r\n" +
-        "In addition, the sender of the message, [" + getToAddress() + "] was authenticated\r\n" + 
+        text = "The message sent to Recipient [" + fromAddress + "] on [" + messageDate + "]\r\n" + 
+        "with Subject [" + subject + "] and Id [" + originalMessageId + "] has been received.\r\n" +
+        "In addition, the sender of the message, [" + toAddress + "] was authenticated\r\n" + 
         "as the originator of the message.\r\n" +
         "This is not a guarantee that the message has been completely processed or\r\n" +
         "understood by the receiving party.\r\n";
