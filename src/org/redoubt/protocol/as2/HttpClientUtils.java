@@ -14,6 +14,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.log4j.Logger;
 import org.redoubt.api.protocol.IProtocol;
+import org.redoubt.protocol.as2.mdn.As2MdnResponseHandler;
 
 public class HttpClientUtils {
     private static final Logger sLogger = Logger.getLogger(HttpClientUtils.class);

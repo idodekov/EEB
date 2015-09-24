@@ -1,4 +1,4 @@
-package org.redoubt.protocol.as2;
+package org.redoubt.protocol.as2.mdn;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,6 +13,7 @@ import org.apache.http.client.ResponseHandler;
 import org.apache.log4j.Logger;
 import org.redoubt.api.protocol.IProtocol;
 import org.redoubt.api.protocol.TransferContext;
+import org.redoubt.protocol.as2.As2HeaderDictionary;
 import org.redoubt.transport.TransportConstants;
 import org.redoubt.util.FileSystemUtils;
 
@@ -30,6 +31,8 @@ public class As2MdnResponseHandler implements ResponseHandler<Boolean> {
         if (status < 200 || status > 300) {
         	throw new ClientProtocolException("Unexpected response status: " + status);
         }
+        
+        Path workFile = null;
         
         try {
         	boolean isThisAnAs2Message = false;
@@ -52,7 +55,7 @@ public class As2MdnResponseHandler implements ResponseHandler<Boolean> {
 	        
 	        InputStream in = response.getEntity().getContent();
 	        
-	        Path workFile = FileSystemUtils.createWorkFile();
+	        workFile = FileSystemUtils.createWorkFile();
 	        FileSystemUtils.copyStreamToFile(in, workFile);
 	        FileSystemUtils.backupFile(workFile);
 	        
@@ -61,9 +64,16 @@ public class As2MdnResponseHandler implements ResponseHandler<Boolean> {
 	        context.put(TransportConstants.CONTEXT_HEADER_MAP, headers);
 	        context.put(TransportConstants.CONTEXT_MDN_TRANSFER, Boolean.TRUE);
 	        protocol.receive(context);
+	        FileSystemUtils.backupFile(workFile);
+	        FileSystemUtils.removeWorkFile(workFile);
         } catch(Exception e) {
         	sLogger.error("An error has occured while processing synchronous MDN. " + e.getMessage(), e);
         	return false;
+        } finally {
+        	if(workFile != null) {
+                FileSystemUtils.backupFile(workFile);
+                FileSystemUtils.removeWorkFile(workFile);
+            }
         }
         
         return true;

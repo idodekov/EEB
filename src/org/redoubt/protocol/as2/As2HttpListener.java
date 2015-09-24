@@ -63,8 +63,10 @@ public class As2HttpListener extends HttpServlet {
             sLogger.error("An error has occured while processing inbound AS2 message. " + e.getMessage(), e);
             throw new IOException(e.getMessage(), e);
         } finally {
-            FileSystemUtils.backupFile(workFile);
-            FileSystemUtils.removeWorkFile(workFile);
+        	if(workFile != null) {
+	            FileSystemUtils.backupFile(workFile);
+	            FileSystemUtils.removeWorkFile(workFile);
+        	}
         }
         
         prepareMdnResponse(context, resp);
