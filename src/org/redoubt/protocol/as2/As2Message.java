@@ -2,6 +2,7 @@ package org.redoubt.protocol.as2;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -166,7 +167,7 @@ public class As2Message implements IMessage {
         headers.put(As2HeaderDictionary.AS2_TO, toAddress);
         headers.put(As2HeaderDictionary.AS2_VERSION, As2HeaderDictionary.AS2_VERSION_1_1);
         headers.put(As2HeaderDictionary.CONNECTION, "close");
-        headers.put(As2HeaderDictionary.USER_AGENT, VersionInformation.APP_NAME + " " + VersionInformation.APP_VERSION);
+        headers.put(As2HeaderDictionary.USER_AGENT, As2HeaderDictionary.USER_AGENT_REDOUBT);
         headers.put(As2HeaderDictionary.ACCEPT_ENCODING, "gzip,deflate");
         headers.put(As2HeaderDictionary.MIME_VERSION, As2HeaderDictionary.MIME_VERSION_1_0);
         headers.put(As2HeaderDictionary.DATE, messageDate);
@@ -382,17 +383,20 @@ public class As2Message implements IMessage {
 	
 	protected void resolveParties(String remotePartyId, String localPartyId) throws ProtocolException {
 		if(remotePartyId == null || localPartyId == null) {
+			disposition.setStatus(Disposition.DISP_AUTHENTICATION_FAILED);
 			throw new ProtocolException("Local or Remote party is unknown.");
 		}
 		
 		IPartyManager partyManager = Factory.getInstance().getPartyManager();
 		localParty = partyManager.getPartyById(localPartyId);
 		if(localParty == null) {
+			disposition.setStatus(Disposition.DISP_AUTHENTICATION_FAILED);
 			throw new ProtocolException("There's no local party for party id [" + localPartyId + "].");
 		}
 		
 		remoteParty = partyManager.getPartyById(remotePartyId);
 		if(remoteParty == null) {
+			disposition.setStatus(Disposition.DISP_AUTHENTICATION_FAILED);
 			throw new ProtocolException("There's no remote party for party id [" + remotePartyId + "].");
 		}
 	}

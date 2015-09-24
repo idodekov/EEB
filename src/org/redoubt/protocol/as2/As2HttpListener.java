@@ -1,9 +1,10 @@
 package org.redoubt.protocol.as2;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Enumeration;
+import java.util.Map;
 
 import javax.mail.internet.InternetHeaders;
 import javax.servlet.ServletException;
@@ -35,12 +36,11 @@ public class As2HttpListener extends HttpServlet {
             throws ServletException, IOException {
         Path workFile = FileSystemUtils.createWorkFile();
         try {
-            Files.copy(req.getInputStream(), workFile);
+            FileSystemUtils.copyStreamToFile(req.getInputStream(), workFile);
             sLogger.debug("An AS2 request has been persisted in the following file: " + workFile.toString());
         } catch(IOException e) {
             sLogger.error("An error has occured while persisting AS2 request to file system. " + e.getMessage(), e);
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            return;
+            throw new IOException(e.getMessage(), e);
         }
         
         FileSystemUtils.backupFile(workFile);
@@ -60,7 +60,6 @@ public class As2HttpListener extends HttpServlet {
         try {
             protocol.process(context);
         } catch (Exception e) {
-        	resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             sLogger.error("An error has occured while processing inbound AS2 message. " + e.getMessage(), e);
             throw new IOException(e.getMessage(), e);
         } finally {
@@ -68,8 +67,28 @@ public class As2HttpListener extends HttpServlet {
             FileSystemUtils.removeWorkFile(workFile);
         }
         
+        prepareMdnResponse(context, resp);
+        
         resp.setStatus(HttpServletResponse.SC_OK);
     }
 	
+    private void prepareMdnResponse(TransferContext context, HttpServletResponse resp) throws IOException {
+    	Boolean mdnTransfer = (Boolean) context.get(TransportConstants.CONTEXT_MDN_TRANSFER);
+    	if(mdnTransfer != null) {
+    		String mdnTarget = (String) context.get(TransportConstants.CONTEXT_MDN);
+			@SuppressWarnings("unchecked")
+			Map<String, String> mdnHeaders = (Map<String, String>) context.get(TransportConstants.CONTEXT_MDN_HEADERS);
+    		
+    		for (Map.Entry<String, String> entry : mdnHeaders.entrySet()) {
+    			resp.setHeader(entry.getKey(), entry.getValue());
+    		}
+    		
+        	Path mdnFile = Paths.get(mdnTarget);
+        	
+        	FileSystemUtils.backupFile(mdnFile);
+        	FileSystemUtils.copyFileToStream(mdnFile, resp.getOutputStream());
+        	FileSystemUtils.removeWorkFile(mdnFile);
+    	}
+    }
 	
 }

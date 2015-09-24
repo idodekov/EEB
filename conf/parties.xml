@@ -12,7 +12,7 @@
 		<Setting name="compress">true</Setting>
 		<Setting name="compressAlgorithm">zlib</Setting>
 		<Setting name="requestMdn">true</Setting>
-		<Setting name="mdnType">asynchronous</Setting>
+		<Setting name="mdnType">synchronous</Setting>
 		<Setting name="asynchronousMdnUrl">http://localhost:4080/as2/</Setting>
 		<Setting name="requestSignedMdn">true</Setting>
 		<Setting name="mdnSigningAlgorithm">sha1</Setting>

@@ -1,5 +1,7 @@
 package org.redoubt.protocol.as2;
 
+import org.redoubt.application.VersionInformation;
+
 public class As2HeaderDictionary {
     private As2HeaderDictionary () {}
     
@@ -30,6 +32,7 @@ public class As2HeaderDictionary {
     public static final String MIME_TYPE_TEXT_PLAIN_US_ASCII = "text/plain; charset=us-ascii";
     public static final String MIME_SUBTYPE_REPORT = "report; report-type=disposition-notification";
     public static final String TRANSFER_ENCODING_BINARY = "binary";
+    public static final String USER_AGENT_REDOUBT = VersionInformation.APP_NAME + " " + VersionInformation.APP_VERSION;
     
     public static final String AS2_VERSION_1_0 = "1.0";
     public static final String AS2_VERSION_1_1 = "1.1";

@@ -1,6 +1,8 @@
 package org.redoubt.util;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -108,5 +110,14 @@ public class FileSystemUtils {
     	}
     	
     	return true;
+    }
+    
+    public static void copyFileToStream(Path workFile, OutputStream out) throws IOException {
+		Files.copy(workFile, out);
+		out.flush();
+    }
+    
+    public static void copyStreamToFile(InputStream in, Path workFile) throws IOException {
+		Files.copy(in, workFile);
     }
 }

@@ -8,6 +8,7 @@ import javax.mail.internet.InternetHeaders;
 
 import org.apache.log4j.Logger;
 import org.redoubt.api.protocol.TransferContext;
+import org.redoubt.application.configuration.ConfigurationConstants;
 import org.redoubt.protocol.BaseProtocol;
 import org.redoubt.protocol.ProtocolException;
 import org.redoubt.protocol.as2.mdn.As2MdnMessage;
@@ -31,7 +32,12 @@ public class As2Protocol extends BaseProtocol {
 	        
 	        InternetHeaders headers = (InternetHeaders) context.get(TransportConstants.CONTEXT_HEADER_MAP);
 	        
-	        message = new As2Message(Files.readAllBytes(workFile), headers);
+	        Boolean mdnTransfer = (Boolean) context.get(TransportConstants.CONTEXT_MDN_TRANSFER);
+	        if(mdnTransfer) {
+	        	message = new As2MdnMessage(Files.readAllBytes(workFile), headers);
+	        } else {
+	        	message = new As2Message(Files.readAllBytes(workFile), headers);
+	        }
 	        message.unpackageMessage(settings);
 	        
 	        message.writeMimeDataToFile(workFile);
@@ -39,24 +45,43 @@ public class As2Protocol extends BaseProtocol {
 	        Path productionFile = Paths.get(productionFolder.toString(), workFile.getFileName().toString());
 	        message.writeMimeDataToFile(productionFile);
 	        
+        } catch(ProtocolException e) {
+        	sLogger.error("An error has occured while unpackaging As2 message. " + e.getMessage(), e);
+        	/* Don't exit here - make sure to send negative MDN if requested */
         } catch (Exception e) {
-            sLogger.error("An error has occured while unpackaging As2 message. " + e.getMessage(), e);
+            sLogger.error("An unrecoverable error has occured while unpackaging As2 message. " + e.getMessage(), e);
             throw new ProtocolException(e.getMessage(), e);
         } finally {
         	if(message != null && message.isMdnReqested()) {
-        		//TODO: dont send in a new connection - send as HTTP response
-	        	As2MdnMessage mdn = new As2MdnMessage(message);
-	        	String mdnType = mdn.getMdnType();
-	        	TransferContext sendContext = new TransferContext();
-	        	sendContext.put(TransportConstants.CONTEXT_MDN_TRANSFER, Boolean.TRUE);
-	        	sendContext.put(TransportConstants.CONTEXT_MDN, mdn);
-	        	Path workFile = FileSystemUtils.createWorkFile();
-	        	sendContext.put(TransportConstants.CONTEXT_FULL_TARGET, workFile.toString());
-	        	send(sendContext);
-	        	FileSystemUtils.backupFile(workFile);
-	        	FileSystemUtils.removeWorkFile(workFile);
+        		sendMdn(message, context);
 	        }
         }
+    }
+        
+    private void sendMdn(As2Message message, TransferContext context) throws ProtocolException {
+    	As2ProtocolSettings settings = (As2ProtocolSettings) getSettings();
+    	
+    	try {
+        	As2MdnMessage mdn = new As2MdnMessage(message);
+        	String mdnType = mdn.getMdnType();
+        	
+        	Path workFile = FileSystemUtils.createWorkFile();
+        	mdn.packageMessage(settings);
+        	mdn.writeMimeDataToFile(workFile);
+        	
+        	if(ConfigurationConstants.MDN_TYPE_SYNCHRONOUS.equals(mdnType)) {
+        		context.put(TransportConstants.CONTEXT_MDN_TRANSFER, Boolean.TRUE);
+        		context.put(TransportConstants.CONTEXT_MDN, workFile.toString());
+        		context.put(TransportConstants.CONTEXT_MDN_HEADERS, mdn.getHeaders());
+        		return;
+        	} else if(ConfigurationConstants.MDN_TYPE_ASYNCHRONOUS.equals(mdnType)) {
+        		//TODO
+        		return;
+        	}
+    	} catch(Exception e) {
+    		 sLogger.error("An error has occured while packaging As2 MDN message. " + e.getMessage(), e);
+             throw new ProtocolException(e.getMessage(), e);
+    	}
     }
     
     @Override
@@ -67,21 +92,16 @@ public class As2Protocol extends BaseProtocol {
         	
         	String fullTarget = (String) context.get(TransportConstants.CONTEXT_FULL_TARGET);
         	Path workFile = Paths.get(fullTarget);
-        	Boolean mdnTransfer = (Boolean) context.get(TransportConstants.CONTEXT_MDN_TRANSFER);
-        	if(mdnTransfer != null) {
-        		message = (As2Message) context.get(TransportConstants.CONTEXT_MDN);
-        	} else {
-            	FileSystemUtils.checkAs2SizeRestrictions(workFile);
-            	
-            	message = new As2Message(workFile, null);
-        	}
         	
+            FileSystemUtils.checkAs2SizeRestrictions(workFile);
+            
+            message = new As2Message(workFile, null);
         	message.packageMessage(settings);
         	message.writeMimeDataToFile(workFile);
         	
         	FileSystemUtils.checkAs2SizeRestrictions(workFile);
             
-            HttpClientUtils.sendPostRequest(settings, workFile, message.getHeaders());
+            HttpClientUtils.sendPostRequest(this, workFile, message.getHeaders());
         }  catch (Exception e) {
             sLogger.error("An error has occured while packaging As2 message. " + e.getMessage(), e);
             throw new ProtocolException(e.getMessage(), e);
