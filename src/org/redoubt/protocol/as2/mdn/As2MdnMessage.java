@@ -131,6 +131,8 @@ public class As2MdnMessage extends As2Message {
 		signCertAlias = remoteParty.getSignCertAlias();
 		decryptAndVerify(false, localParty.isRequestSignedMdn());
 		
+		//TODO: gather MIC, original-message-id
+		
 		sLogger.debug("As2 MDN message successfully unpackaged.");
 	}
 
@@ -157,12 +159,13 @@ public class As2MdnMessage extends As2Message {
         String dispText = dispData.toString();
         dispositionPart.setContent(dispText, As2HeaderDictionary.MIME_TYPE_DISPOSITION_NOTIFICATION);
         dispositionPart.setHeader(As2HeaderDictionary.CONTENT_TYPE, As2HeaderDictionary.MIME_TYPE_DISPOSITION_NOTIFICATION);
+        dispositionPart.setHeader(As2HeaderDictionary.CONTENT_TRANSFER_ENCODING, As2HeaderDictionary.TRANSFER_ENCODING_7BIT);
 
         return dispositionPart;
     }
 	
 	protected MimeBodyPart createTextPart() throws IOException, MessagingException {
-        MimeBodyPart textPart = new MimeBodyPart();        
+        MimeBodyPart textPart = new MimeBodyPart();
         
         text = "The message sent to Recipient [" + fromAddress + "] on [" + originalMessageDate + "]\r\n" + 
         "with Subject [" + originalSubject + "] and Id [" + originalMessageId + "] has been received.\r\n" +
@@ -173,6 +176,7 @@ public class As2MdnMessage extends As2Message {
         
         textPart.setContent(text, As2HeaderDictionary.MIME_TYPE_TEXT_PLAIN_US_ASCII);
         textPart.setHeader(As2HeaderDictionary.CONTENT_TYPE, As2HeaderDictionary.MIME_TYPE_TEXT_PLAIN_US_ASCII);
+        textPart.setHeader(As2HeaderDictionary.CONTENT_TRANSFER_ENCODING, As2HeaderDictionary.TRANSFER_ENCODING_7BIT);
 
         return textPart;
     }
