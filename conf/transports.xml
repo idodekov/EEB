@@ -23,6 +23,7 @@
 			<Setting name="password">SECRET123</Setting>
 			<Setting name="enforceSigning">false</Setting>
 			<Setting name="enforceEncryption">false</Setting>
+			<Setting name="productionFolder">F:\</Setting>
 		</Protocol>
 		<Setting name="folder">F:\WORK\___WORK</Setting>
 		<Setting name="name">FileSystem</Setting>

@@ -33,7 +33,7 @@ public class As2Protocol extends BaseProtocol {
 	        InternetHeaders headers = (InternetHeaders) context.get(TransportConstants.CONTEXT_HEADER_MAP);
 	        
 	        Boolean mdnTransfer = (Boolean) context.get(TransportConstants.CONTEXT_MDN_TRANSFER);
-	        if(mdnTransfer) {
+	        if(mdnTransfer != null && mdnTransfer) {
 	        	message = new As2MdnMessage(Files.readAllBytes(workFile), headers);
 	        } else {
 	        	message = new As2Message(Files.readAllBytes(workFile), headers);

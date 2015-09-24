@@ -13,16 +13,15 @@ import org.apache.http.client.ResponseHandler;
 import org.apache.log4j.Logger;
 import org.redoubt.api.protocol.IProtocol;
 import org.redoubt.api.protocol.TransferContext;
-import org.redoubt.protocol.as2.mdn.As2MdnMessage;
 import org.redoubt.transport.TransportConstants;
 import org.redoubt.util.FileSystemUtils;
 
-public class As2ResponseHandler implements ResponseHandler<Boolean> {
-	private static final Logger sLogger = Logger.getLogger(As2ResponseHandler.class);
+public class As2MdnResponseHandler implements ResponseHandler<Boolean> {
+	private static final Logger sLogger = Logger.getLogger(As2MdnResponseHandler.class);
 	private IProtocol protocol;
 
-	public As2ResponseHandler(IProtocol protocol) {
-		this.protocol = protocol;
+	public As2MdnResponseHandler(IProtocol as2Protocol) {
+		protocol = as2Protocol;
 	}
 
 	@Override
@@ -31,8 +30,6 @@ public class As2ResponseHandler implements ResponseHandler<Boolean> {
         if (status < 200 || status > 300) {
         	throw new ClientProtocolException("Unexpected response status: " + status);
         }
-        
-        As2MdnMessage mdn = null;
         
         try {
         	boolean isThisAnAs2Message = false;

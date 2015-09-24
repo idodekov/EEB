@@ -18,7 +18,7 @@ import org.redoubt.api.protocol.IProtocol;
 public class HttpClientUtils {
     private static final Logger sLogger = Logger.getLogger(HttpClientUtils.class);
     
-    public static void sendPostRequest(IProtocol protocol, Path file, Map<String, String> headers) throws Exception {
+    public static void sendPostRequest(IProtocol protocol, Path file, Map<String,String> headers) throws Exception {
         CloseableHttpClient httpclient = null;
         HttpPost httpPost = null;
         As2ProtocolSettings settings = (As2ProtocolSettings) protocol.getSettings();
@@ -49,10 +49,10 @@ public class HttpClientUtils {
             	}
             }
             
-            ByteArrayEntity entity=new ByteArrayEntity(Files.readAllBytes(file));
+            ByteArrayEntity entity = new ByteArrayEntity(Files.readAllBytes(file));
             httpPost.setEntity(entity);
             
-            As2ResponseHandler responseHandler = new As2ResponseHandler(protocol);
+            As2MdnResponseHandler responseHandler = new As2MdnResponseHandler(protocol);
             
             Boolean response = httpclient.execute(httpPost, responseHandler);
         } finally {
