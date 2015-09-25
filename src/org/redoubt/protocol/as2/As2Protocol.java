@@ -1,6 +1,5 @@
 package org.redoubt.protocol.as2;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -36,7 +35,7 @@ public class As2Protocol extends BaseProtocol {
 	        FileSystemUtils.checkAs2SizeRestrictions(workFile);
 	        
 	        InternetHeaders headers = (InternetHeaders) context.get(TransportConstants.CONTEXT_HEADER_MAP);
-	        
+	        //TODO: think on how to resolve that this is a MDN
 	        Boolean mdnTransfer = (Boolean) context.get(TransportConstants.CONTEXT_MDN_TRANSFER);
 	        if(mdnTransfer != null && mdnTransfer) {
 	        	message = new As2MdnMessage(Files.readAllBytes(workFile), headers);
