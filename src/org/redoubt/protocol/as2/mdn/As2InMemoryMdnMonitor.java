@@ -62,4 +62,9 @@ public class As2InMemoryMdnMonitor implements IMdnMonitor {
 		sLogger.info("Message with MIC [" + uniqueId + "] and MessageId [" + message.getMessageId() + "] has been confirmed with a receipt.");
 		unconfirmedMessages.remove(uniqueId);
 	}
+
+	@Override
+	public IMessage getMessage(String uniqueId) {
+		return unconfirmedMessages.get(uniqueId);
+	}
 }

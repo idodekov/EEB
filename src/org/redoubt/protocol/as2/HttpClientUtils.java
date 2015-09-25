@@ -33,9 +33,11 @@ public class HttpClientUtils {
             ByteArrayEntity entity = new ByteArrayEntity(Files.readAllBytes(file));
             httpPost.setEntity(entity);
             
+            sLogger.debug("Sending POST request to " + url);
+            
             if(protocol == null) {
             	As2MdnResponseHandler responseHandler = new As2MdnResponseHandler(protocol);
-                Boolean response = httpclient.execute(httpPost, responseHandler);
+                httpclient.execute(httpPost, responseHandler);
             } else {
             	httpclient.execute(httpPost);
             }

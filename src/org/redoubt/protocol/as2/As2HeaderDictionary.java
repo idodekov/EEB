@@ -29,6 +29,7 @@ public class As2HeaderDictionary {
     
     public static final String MIME_TYPE_APPLICATION_OCTET_STREAM = "application/octet-stream";
     public static final String MIME_TYPE_DISPOSITION_NOTIFICATION = "message/disposition-notification";
+    public static final String MIME_TYPE_TEXT_PLAIN = "text/plain";
     public static final String MIME_TYPE_TEXT_PLAIN_US_ASCII = "text/plain; charset=us-ascii";
     public static final String MIME_SUBTYPE_REPORT = "report; report-type=disposition-notification";
     public static final String TRANSFER_ENCODING_BINARY = "binary";

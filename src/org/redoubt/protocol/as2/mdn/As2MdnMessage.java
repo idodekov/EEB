@@ -13,6 +13,7 @@ import javax.mail.internet.MimeMultipart;
 import org.apache.log4j.Logger;
 import org.redoubt.api.configuration.ICryptoHelper;
 import org.redoubt.api.factory.Factory;
+import org.redoubt.api.protocol.IMdnMonitor;
 import org.redoubt.api.protocol.IProtocolSettings;
 import org.redoubt.application.VersionInformation;
 import org.redoubt.protocol.ProtocolException;
@@ -139,7 +140,23 @@ public class As2MdnMessage extends As2Message {
 		signCertAlias = remoteParty.getSignCertAlias();
 		decryptAndVerify(false, localParty.isRequestSignedMdn());
 		
-		//TODO: gather MIC, original-message-id
+		readDispositionPart();
+		
+		IMdnMonitor monitor = Factory.getInstance().getMdnMonitor();
+		if(monitor.isMessageRegistered(mic)) {
+			As2Message originalMessage = (As2Message) monitor.getMessage(mic);
+			
+			if(originalMessage.getMessageId().equals(originalMessageId)) {
+				sLogger.info("Message with Message-Id: " + originalMessageId + " and MIC: " + mic + " has been confirmed with a MDN.");
+				monitor.confirmAndDeregisterMessage(mic);
+			} else {
+				sLogger.error("Received an MDN, which is not expected. MIC: " + mic + ". From: " + 
+						fromAddress + ". To: " + toAddress + ". Original-Message-Id: " + originalMessageId);
+			}
+		} else {
+			sLogger.error("Received an MDN, which is not expected. MIC: " + mic + ". From: " + 
+					fromAddress + ". To: " + toAddress + ". Original-Message-Id: " + originalMessageId);
+		}
 		
 		sLogger.debug("As2 MDN message successfully unpackaged.");
 	}
@@ -168,6 +185,28 @@ public class As2MdnMessage extends As2Message {
 		}
 		
 		return false;
+	}
+	
+	protected void readDispositionPart() throws IOException, MessagingException {
+		MimeMultipart mainParts = (MimeMultipart) data.getContent();
+		int partCount = mainParts.getCount();
+		
+		for (int i = 0; i < partCount; i++) {
+			BodyPart part = mainParts.getBodyPart(i);
+			
+			if (part.isMimeType(As2HeaderDictionary.MIME_TYPE_DISPOSITION_NOTIFICATION)) {
+	            try {
+	                InternetHeaders headers = new InternetHeaders(part.getInputStream());
+	                originalMessageId = headers.getHeader("Original-Message-ID", ", ");
+	                disposition.setStatus((headers.getHeader("Disposition", ", ")));
+	                mic = headers.getHeader("Received-Content-MIC", ", ");
+	            } catch (IOException ioe) {
+	                throw new MessagingException("Error parsing disposition notification: " + ioe.getMessage());
+	            }
+	        } else if(part.isMimeType(As2HeaderDictionary.MIME_TYPE_TEXT_PLAIN)) {
+                text = part.getContent().toString();
+            }
+		}
 	}
 
 	protected MimeBodyPart createDispositionPart() throws IOException, MessagingException {
