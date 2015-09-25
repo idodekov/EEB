@@ -2,10 +2,7 @@ package org.redoubt.protocol.as2;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Enumeration;
-import java.util.Map;
-import java.util.Timer;
 
 import javax.mail.internet.InternetHeaders;
 import javax.servlet.ServletException;
@@ -16,8 +13,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.redoubt.api.protocol.IProtocol;
 import org.redoubt.api.protocol.TransferContext;
-import org.redoubt.application.configuration.ConfigurationConstants;
-import org.redoubt.protocol.as2.mdn.AsynchronousMdnSender;
 import org.redoubt.transport.TransportConstants;
 import org.redoubt.transport.http.HttpTransportSettings;
 import org.redoubt.util.FileSystemUtils;
@@ -59,6 +54,7 @@ public class As2HttpListener extends HttpServlet {
         }
         
         context.put(TransportConstants.CONTEXT_HEADER_MAP, headersMap);
+        context.put(TransportConstants.CONTEXT_SERVLET_RESPONSE, resp);
         
         try {
             protocol.process(context);
@@ -71,36 +67,5 @@ public class As2HttpListener extends HttpServlet {
 	            FileSystemUtils.removeWorkFile(workFile);
         	}
         }
-        
-        prepareMdnResponse(context, resp);
     }
-	
-    private void prepareMdnResponse(TransferContext context, HttpServletResponse resp) throws IOException {
-    	Boolean mdnTransfer = (Boolean) context.get(TransportConstants.CONTEXT_MDN_TRANSFER);
-    	if(mdnTransfer != null) {
-    		String mdnTarget = (String) context.get(TransportConstants.CONTEXT_MDN);
-    		String mdnType = (String) context.get(TransportConstants.CONTEXT_MDN_TYPE);
-			@SuppressWarnings("unchecked")
-			Map<String, String> mdnHeaders = (Map<String, String>) context.get(TransportConstants.CONTEXT_MDN_HEADERS);
-    		
-        	Path mdnFile = Paths.get(mdnTarget);
-        	
-        	FileSystemUtils.backupFile(mdnFile);
-        	
-        	if(ConfigurationConstants.MDN_TYPE_SYNCHRONOUS.equals(mdnType)) {
-	        	for (Map.Entry<String, String> entry : mdnHeaders.entrySet()) {
-	    			resp.setHeader(entry.getKey(), entry.getValue());
-	    		}
-	        	FileSystemUtils.copyFileToStream(mdnFile, resp.getOutputStream());
-	        	FileSystemUtils.removeWorkFile(mdnFile);
-        	} else if(ConfigurationConstants.MDN_TYPE_ASYNCHRONOUS.equals(mdnType)) {
-        		String url = (String) context.get(TransportConstants.CONTEXT_MDN_URL);
-        		Timer timer = new Timer();
-        		AsynchronousMdnSender mdnSender = new AsynchronousMdnSender(mdnFile, mdnHeaders, url);
-        		timer.schedule(mdnSender, 10 * 1000);
-        	}
-        	
-    	}
-    }
-	
 }

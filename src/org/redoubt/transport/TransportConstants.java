@@ -11,6 +11,7 @@ public class TransportConstants {
     public static final String CONTEXT_MDN_HEADERS = "MdnHeaders";
     public static final String CONTEXT_MDN_TYPE = "MdnType";
     public static final String CONTEXT_MDN_URL = "MdnUrl";
+    public static final String CONTEXT_SERVLET_RESPONSE = "ServletResponse";
     
     public static final String WORK_FOLDER_NAME = ".work";
 }

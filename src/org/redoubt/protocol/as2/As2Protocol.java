@@ -1,16 +1,22 @@
 package org.redoubt.protocol.as2;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
+import java.util.Timer;
 
 import javax.mail.internet.InternetHeaders;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.redoubt.api.protocol.TransferContext;
+import org.redoubt.application.configuration.ConfigurationConstants;
 import org.redoubt.protocol.BaseProtocol;
 import org.redoubt.protocol.ProtocolException;
 import org.redoubt.protocol.as2.mdn.As2MdnMessage;
+import org.redoubt.protocol.as2.mdn.AsynchronousMdnSender;
 import org.redoubt.transport.TransportConstants;
 import org.redoubt.util.FileSystemUtils;
 
@@ -68,11 +74,24 @@ public class As2Protocol extends BaseProtocol {
         	mdn.packageMessage(settings);
         	mdn.writeMimeDataToFile(workFile);
         	
-        	context.put(TransportConstants.CONTEXT_MDN_TRANSFER, Boolean.TRUE);
-        	context.put(TransportConstants.CONTEXT_MDN, workFile.toString());
-        	context.put(TransportConstants.CONTEXT_MDN_HEADERS, mdn.getHeaders());
-        	context.put(TransportConstants.CONTEXT_MDN_TYPE, mdnType);
-        	context.put(TransportConstants.CONTEXT_MDN_URL, mdn.getAsynchronousMdnUrl());
+    		Map<String, String> mdnHeaders = mdn.getHeaders();
+        		
+            FileSystemUtils.backupFile(workFile);
+            	
+            HttpServletResponse resp = (HttpServletResponse) context.get(TransportConstants.CONTEXT_SERVLET_RESPONSE);
+            
+            if(ConfigurationConstants.MDN_TYPE_SYNCHRONOUS.equals(mdnType)) {
+    	        for (Map.Entry<String, String> entry : mdnHeaders.entrySet()) {
+    	    		resp.setHeader(entry.getKey(), entry.getValue());
+    	    	}
+    	        FileSystemUtils.copyFileToStream(workFile, resp.getOutputStream());
+    	        FileSystemUtils.removeWorkFile(workFile);
+            } else if(ConfigurationConstants.MDN_TYPE_ASYNCHRONOUS.equals(mdnType)) {
+            	Timer timer = new Timer();
+            	AsynchronousMdnSender mdnSender = new AsynchronousMdnSender(workFile, mdnHeaders, mdn.getAsynchronousMdnUrl());
+            	timer.schedule(mdnSender, ConfigurationConstants.MDN_ASYNCHRONOUS_DELAY);
+            }
+            	
         	return;
     	} catch(Exception e) {
     		 sLogger.error("An error has occured while packaging As2 MDN message. " + e.getMessage(), e);
