@@ -14,7 +14,7 @@
 		<Setting name="requestMdn">true</Setting>
 		<Setting name="mdnType">asynchronous</Setting>
 		<Setting name="asynchronousMdnUrl">http://localhost:4080/as2/</Setting>
-		<Setting name="requestSignedMdn">true</Setting>
+		<Setting name="requestSignedMdn">false</Setting>
 		<Setting name="mdnSigningAlgorithm">sha1</Setting>
 	</Party>
 	<Party>

@@ -19,8 +19,6 @@
 			<Setting name="from">alpha</Setting>
 			<Setting name="to">beta</Setting>
 			<Setting name="url">http://localhost:4080/as2/</Setting>
-			<Setting name="username">idodekov</Setting>
-			<Setting name="password">SECRET123</Setting>
 			<Setting name="enforceSigning">false</Setting>
 			<Setting name="enforceEncryption">false</Setting>
 			<Setting name="productionFolder">F:\</Setting>

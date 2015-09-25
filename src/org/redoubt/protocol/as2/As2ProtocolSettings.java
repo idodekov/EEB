@@ -12,8 +12,6 @@ public class As2ProtocolSettings extends SettingsHolder implements IProtocolSett
 	
 	public As2ProtocolSettings() {
 		//Set default values
-		put(As2ProtocolSettingsKeyring.USERNAME, "");
-		put(As2ProtocolSettingsKeyring.PASSWORD, "");
 		put(As2ProtocolSettingsKeyring.ENFORCE_SIGNING, Boolean.toString(false));
 		put(As2ProtocolSettingsKeyring.ENFORCE_ENCRYPTION, Boolean.toString(false));
 	}
@@ -56,22 +54,6 @@ public class As2ProtocolSettings extends SettingsHolder implements IProtocolSett
         put(As2ProtocolSettingsKeyring.URL, url);
     }
     
-    public String getUsername() {
-        return (String) get(As2ProtocolSettingsKeyring.USERNAME);
-    }
-    
-    public void setUsername(String username) {
-        put(As2ProtocolSettingsKeyring.USERNAME, username);
-    }
-    
-    public String getPassword() {
-        return (String) get(As2ProtocolSettingsKeyring.PASSWORD);
-    }
-    
-    public void setPassword(String password) {
-        put(As2ProtocolSettingsKeyring.PASSWORD, password);
-    }
-    
     public boolean isEncryptionEnforced() {
     	return Boolean.parseBoolean((String) get(As2ProtocolSettingsKeyring.ENFORCE_ENCRYPTION));
     }
@@ -101,8 +83,6 @@ public class As2ProtocolSettings extends SettingsHolder implements IProtocolSett
         public static final String FROM = "from";
         public static final String TO = "to";
         public static final String URL = "url";
-        public static final String USERNAME = "username";
-        public static final String PASSWORD = "password";
         public static final String PRODUCTION_FOLDER = "productionFolder";
         public static final String ENFORCE_SIGNING = "enforceSigning";
         public static final String ENFORCE_ENCRYPTION = "enforceEncryption";

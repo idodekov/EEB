@@ -16,6 +16,7 @@ import org.redoubt.protocol.BaseProtocol;
 import org.redoubt.protocol.ProtocolException;
 import org.redoubt.protocol.as2.mdn.As2MdnMessage;
 import org.redoubt.protocol.as2.mdn.AsynchronousMdnSender;
+import org.redoubt.protocol.as2.mdn.MdnException;
 import org.redoubt.transport.TransportConstants;
 import org.redoubt.util.FileSystemUtils;
 
@@ -35,14 +36,18 @@ public class As2Protocol extends BaseProtocol {
 	        FileSystemUtils.checkAs2SizeRestrictions(workFile);
 	        
 	        InternetHeaders headers = (InternetHeaders) context.get(TransportConstants.CONTEXT_HEADER_MAP);
-	        //TODO: think on how to resolve that this is a MDN
-	        Boolean mdnTransfer = (Boolean) context.get(TransportConstants.CONTEXT_MDN_TRANSFER);
-	        if(mdnTransfer != null && mdnTransfer) {
-	        	message = new As2MdnMessage(Files.readAllBytes(workFile), headers);
-	        } else {
+
+	        /* Assume this is an asynchronous MDN. If this is a regular 
+	         * As2 Message an MdnException will be generated and normal 
+	         * As2 processing will start */
+	        message = new As2MdnMessage(Files.readAllBytes(workFile), headers);
+	        
+	        try {
+	        	message.unpackageMessage(settings);
+	        } catch(MdnException e) {
 	        	message = new As2Message(Files.readAllBytes(workFile), headers);
+	        	message.unpackageMessage(settings);
 	        }
-	        message.unpackageMessage(settings);
 	        
 	        message.writeMimeDataToFile(workFile);
 	        
@@ -115,7 +120,7 @@ public class As2Protocol extends BaseProtocol {
         	
         	FileSystemUtils.checkAs2SizeRestrictions(workFile);
             
-            HttpClientUtils.sendPostRequest(this, workFile, message.getHeaders());
+            HttpClientUtils.sendPostRequest(this, workFile, message.getHeaders(), settings.getUrl());
         }  catch (Exception e) {
             sLogger.error("An error has occured while packaging As2 message. " + e.getMessage(), e);
             throw new ProtocolException(e.getMessage(), e);

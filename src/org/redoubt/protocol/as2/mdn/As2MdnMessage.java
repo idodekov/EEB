@@ -4,12 +4,15 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Enumeration;
 
+import javax.mail.BodyPart;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetHeaders;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
 
 import org.apache.log4j.Logger;
+import org.redoubt.api.configuration.ICryptoHelper;
+import org.redoubt.api.factory.Factory;
 import org.redoubt.api.protocol.IProtocolSettings;
 import org.redoubt.application.VersionInformation;
 import org.redoubt.protocol.ProtocolException;
@@ -128,12 +131,43 @@ public class As2MdnMessage extends As2Message {
 		
 		resolveParties(fromAddress, toAddress);
 		
+		if(!confirmThisIsMdn()) {
+			sLogger.debug("This is not an MDN message - this is a regular As2 message.");
+			throw new MdnException();
+		}
+		
 		signCertAlias = remoteParty.getSignCertAlias();
 		decryptAndVerify(false, localParty.isRequestSignedMdn());
 		
 		//TODO: gather MIC, original-message-id
 		
 		sLogger.debug("As2 MDN message successfully unpackaged.");
+	}
+	
+	private boolean confirmThisIsMdn() throws Exception {
+		ICryptoHelper cryptoHelper = Factory.getInstance().getCryptoHelper();
+		if(cryptoHelper.isSigned(data)) {
+			MimeMultipart mainParts = (MimeMultipart) data.getContent();
+			
+			BodyPart part1 = mainParts.getBodyPart(0);
+			String part1ContentType = part1.getContentType();
+			if(part1ContentType.contains("disposition-notification")) {
+				return true;
+			}
+			
+			BodyPart part2 = mainParts.getBodyPart(1);
+			String part2ContentType = part2.getContentType();
+			if(part2ContentType.contains("disposition-notification")) {
+				return true;
+			}
+			
+		} else {
+			if(data.getContentType().contains("disposition-notification")) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 
 	protected MimeBodyPart createDispositionPart() throws IOException, MessagingException {

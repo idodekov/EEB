@@ -27,7 +27,7 @@ public class AsynchronousMdnSender extends TimerTask {
 			@Override
 			public void run() {
 				try {
-					HttpClientUtils.sendPostRequest(mdnFile, mdnHeaders, url);
+					HttpClientUtils.sendPostRequest(null, mdnFile, mdnHeaders, url);
 					FileSystemUtils.removeWorkFile(mdnFile);
 				} catch (Exception e) {
 					sLogger.error("An error has occured while sending asynchronous MDN. " + e.getMessage(), e);

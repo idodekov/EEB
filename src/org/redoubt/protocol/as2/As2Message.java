@@ -380,7 +380,7 @@ public class As2Message implements IMessage {
         }
 	}
 	
-	protected void resolveParties(String remotePartyId, String localPartyId) throws ProtocolException {
+	public void resolveParties(String remotePartyId, String localPartyId) throws ProtocolException {
 		if(remotePartyId == null || localPartyId == null) {
 			disposition.setStatus(Disposition.DISP_AUTHENTICATION_FAILED);
 			throw new ProtocolException("Local or Remote party is unknown.");
