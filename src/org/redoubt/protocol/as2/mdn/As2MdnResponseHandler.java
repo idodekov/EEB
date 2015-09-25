@@ -64,8 +64,6 @@ public class As2MdnResponseHandler implements ResponseHandler<Boolean> {
 	        context.put(TransportConstants.CONTEXT_HEADER_MAP, headers);
 	        context.put(TransportConstants.CONTEXT_MDN_TRANSFER, Boolean.TRUE);
 	        protocol.receive(context);
-	        FileSystemUtils.backupFile(workFile);
-	        FileSystemUtils.removeWorkFile(workFile);
         } catch(Exception e) {
         	sLogger.error("An error has occured while processing synchronous MDN. " + e.getMessage(), e);
         	return false;

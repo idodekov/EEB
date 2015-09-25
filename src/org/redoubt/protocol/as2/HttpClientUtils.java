@@ -19,20 +19,31 @@ import org.redoubt.protocol.as2.mdn.As2MdnResponseHandler;
 public class HttpClientUtils {
     private static final Logger sLogger = Logger.getLogger(HttpClientUtils.class);
     
-    public static void sendPostRequest(IProtocol protocol, Path file, Map<String,String> headers) throws Exception {
+    public static void sendPostRequest(Path file, Map<String,String> headers, String url) 
+    		throws Exception {
+    	sendPostRequest(null, file, headers, null, null, url);
+    }
+    
+    public static void sendPostRequest(IProtocol protocol, Path file, Map<String,String> headers) 
+    		throws Exception {
+    	As2ProtocolSettings settings = (As2ProtocolSettings) protocol.getSettings();
+    	sendPostRequest(protocol, file, headers, settings.getUsername(), settings.getPassword(), settings.getUrl());
+    }
+    
+    public static void sendPostRequest(IProtocol protocol, Path file, Map<String,String> headers, String username, String password, String url) 
+    		throws Exception {
         CloseableHttpClient httpclient = null;
         HttpPost httpPost = null;
-        As2ProtocolSettings settings = (As2ProtocolSettings) protocol.getSettings();
         
         try {
             CredentialsProvider credsProvider = null;
             
-            if(settings.getUsername() != null && !settings.getUsername().trim().isEmpty()) {
+            if(username != null && !username.trim().isEmpty()) {
                 sLogger.debug("Client authentication has been enabled - setting username and password as HTTP Basic.");
                 credsProvider = new BasicCredentialsProvider();
                 credsProvider.setCredentials(
                         new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT),
-                        new UsernamePasswordCredentials(settings.getUsername().trim(), settings.getPassword()));
+                        new UsernamePasswordCredentials(username.trim(), password));
                 
             }
             
@@ -42,7 +53,7 @@ public class HttpClientUtils {
                 httpclient = HttpClients.createDefault();
             }
             
-            httpPost = new HttpPost(settings.getUrl());
+            httpPost = new HttpPost(url);
             
             if(headers != null) {
             	for (Map.Entry<String, String> entry : headers.entrySet()) {
@@ -53,9 +64,12 @@ public class HttpClientUtils {
             ByteArrayEntity entity = new ByteArrayEntity(Files.readAllBytes(file));
             httpPost.setEntity(entity);
             
-            As2MdnResponseHandler responseHandler = new As2MdnResponseHandler(protocol);
-            
-            Boolean response = httpclient.execute(httpPost, responseHandler);
+            if(protocol == null) {
+            	As2MdnResponseHandler responseHandler = new As2MdnResponseHandler(protocol);
+                Boolean response = httpclient.execute(httpPost, responseHandler);
+            } else {
+            	httpclient.execute(httpPost);
+            }
         } finally {
         	if(httpPost != null) {
         		httpPost.releaseConnection();

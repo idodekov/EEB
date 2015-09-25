@@ -9,6 +9,8 @@ public class TransportConstants {
     public static final String CONTEXT_MDN_TRANSFER = "MdnTransfer";
     public static final String CONTEXT_MDN = "Mdn";
     public static final String CONTEXT_MDN_HEADERS = "MdnHeaders";
+    public static final String CONTEXT_MDN_TYPE = "MdnType";
+    public static final String CONTEXT_MDN_URL = "MdnUrl";
     
     public static final String WORK_FOLDER_NAME = ".work";
 }

@@ -8,7 +8,6 @@ import javax.mail.internet.InternetHeaders;
 
 import org.apache.log4j.Logger;
 import org.redoubt.api.protocol.TransferContext;
-import org.redoubt.application.configuration.ConfigurationConstants;
 import org.redoubt.protocol.BaseProtocol;
 import org.redoubt.protocol.ProtocolException;
 import org.redoubt.protocol.as2.mdn.As2MdnMessage;
@@ -49,7 +48,7 @@ public class As2Protocol extends BaseProtocol {
         	sLogger.error("An error has occured while unpackaging As2 message. " + e.getMessage(), e);
         	/* Don't exit here - make sure to send negative MDN if requested */
         } catch (Exception e) {
-            sLogger.error("An unrecoverable error has occured while unpackaging As2 message. " + e.getMessage(), e);
+            sLogger.error("An error has occured while unpackaging As2 message. " + e.getMessage(), e);
             throw new ProtocolException(e.getMessage(), e);
         } finally {
         	if(message != null && message.isMdnReqested()) {
@@ -69,15 +68,12 @@ public class As2Protocol extends BaseProtocol {
         	mdn.packageMessage(settings);
         	mdn.writeMimeDataToFile(workFile);
         	
-        	if(ConfigurationConstants.MDN_TYPE_SYNCHRONOUS.equals(mdnType)) {
-        		context.put(TransportConstants.CONTEXT_MDN_TRANSFER, Boolean.TRUE);
-        		context.put(TransportConstants.CONTEXT_MDN, workFile.toString());
-        		context.put(TransportConstants.CONTEXT_MDN_HEADERS, mdn.getHeaders());
-        		return;
-        	} else if(ConfigurationConstants.MDN_TYPE_ASYNCHRONOUS.equals(mdnType)) {
-        		//TODO
-        		return;
-        	}
+        	context.put(TransportConstants.CONTEXT_MDN_TRANSFER, Boolean.TRUE);
+        	context.put(TransportConstants.CONTEXT_MDN, workFile.toString());
+        	context.put(TransportConstants.CONTEXT_MDN_HEADERS, mdn.getHeaders());
+        	context.put(TransportConstants.CONTEXT_MDN_TYPE, mdnType);
+        	context.put(TransportConstants.CONTEXT_MDN_URL, mdn.getAsynchronousMdnUrl());
+        	return;
     	} catch(Exception e) {
     		 sLogger.error("An error has occured while packaging As2 MDN message. " + e.getMessage(), e);
              throw new ProtocolException(e.getMessage(), e);
