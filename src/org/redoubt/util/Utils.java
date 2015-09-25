@@ -71,7 +71,7 @@ public class Utils {
 		}
 		
 		if(messageId.startsWith("<") && messageId.endsWith(">")) {
-			return messageId.substring(1, messageId.length() -2);
+			return messageId.substring(1, messageId.length() - 1);
 		}
 		
 		return messageId;
