@@ -42,7 +42,8 @@
         <javac 
 		srcdir="${srcdir}/src" 
 		destdir="${destdir}/classes" 
-		classpathref="cp" debug="${debug}" 
+		classpathref="cp" 
+		debug="${debug}" 
 		deprecation="on" 
 		optimize="${optimize}" 
 		source="${source}" 
@@ -65,7 +66,15 @@
     <!-- ______________________________________________________________________ -->
     <target name="package" depends="jar">
         <echo message="Generating ZIP package" />
+		
+		<copy file="${srcdir}/scripts/startServer.cmd" tofile="${destdir}/startServer.cmd"></copy>
+		<!--copy file="${srcdir}/scripts/stopServer.cmd" tofile="${destdir}/stopServer.cmd"></copy-->
+		<copy file="${srcdir}/scripts/startServer.sh" tofile="${destdir}/startServer.sh"></copy>
+		<!--copy file="${srcdir}/scripts/stopServer.sh" tofile="${destdir}/stopServer.sh"></copy-->
 
+		<fixcrlf srcdir="${destdir}" includes="*.sh" eol="lf" />
+		<fixcrlf srcdir="${destdir}" includes="*.cmd" eol="crlf" />
+		
         <zip destfile="${destdir}/${packageNameWindows}">
             <zipfileset dir="${destdir}" prefix="lib/jars/">
                 <include name="${redoubtJar}" />
@@ -79,10 +88,18 @@
             <zipfileset dir="${srcdir}/lib" prefix="lib/jars/external">
                 <include name="*.jar" />
             </zipfileset>
+			
+			<zipfileset dir="${destdir}">
+                <include name="*.cmd" />
+            </zipfileset>
         </zip>
 		
 		<delete dir="${destdir}/classes" />
 		<delete file="${destdir}/${redoubtJar}" />
+		<delete file="${destdir}/startServer.cmd" />
+		<delete file="${destdir}/stopServer.cmd" />
+		<delete file="${destdir}/startServer.sh" />
+		<delete file="${destdir}/stopServer.sh" />
     </target>
 
     <!-- ______________________________________________________________________ -->
