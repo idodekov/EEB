@@ -68,7 +68,7 @@
         <echo message="Generating ZIP package" />
 		
 		<copy file="${srcdir}/scripts/startServer.cmd" tofile="${destdir}/startServer.cmd"></copy>
-		<!--copy file="${srcdir}/scripts/stopServer.cmd" tofile="${destdir}/stopServer.cmd"></copy-->
+		<copy file="${srcdir}/scripts/stopServer.cmd" tofile="${destdir}/stopServer.cmd"></copy>
 		<copy file="${srcdir}/scripts/startServer.sh" tofile="${destdir}/startServer.sh"></copy>
 		<!--copy file="${srcdir}/scripts/stopServer.sh" tofile="${destdir}/stopServer.sh"></copy-->
 
