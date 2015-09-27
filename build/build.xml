@@ -97,6 +97,10 @@
                 <include name="readme.txt" />
             </zipfileset>
 			
+			<zipfileset dir="${srcdir}/logs" prefix="logs/">
+                <include name="readme.txt" />
+            </zipfileset>
+			
 			<zipfileset dir="${destdir}">
                 <include name="*.cmd" />
             </zipfileset>

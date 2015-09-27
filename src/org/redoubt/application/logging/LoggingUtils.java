@@ -8,11 +8,11 @@ public class LoggingUtils {
 	private static final Logger sLogger = Logger.getLogger(LoggingUtils.class);
 	
 	public static void initializeLogging() {
-		DOMConfigurator.configureAndWatch(ConfigurationConstants.CONFIGURATION_FILE_LOG4J);
+		DOMConfigurator.configureAndWatch(ConfigurationConstants.CONFIGURATION_FILE_REDOUBT_LOG4J);
 		sLogger.info("log4j system initialized.");
 	}
 	
 	public static void suppressLogging() {
-	    //TODO
+		DOMConfigurator.configureAndWatch(ConfigurationConstants.CONFIGURATION_FILE_SHUTDOWN_LOG4J);
     }
 }
