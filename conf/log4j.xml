@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration debug="true" xmlns:log4j='http://jakarta.apache.org/log4j/'>
+
+	<appender class="org.apache.log4j.RollingFileAppender" name="redoubt-appender">
+		<param name="file" value="logs/redoubt.log"/>
+		<param name="maxFileSize" value="10MB" />
+		<param name="append" value="true"/>
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d %-5p [%t] %-16c{1} - %m%n"/>
+		</layout>
+	</appender>
+
+	<root>
+		<level value="ERROR" />
+		<appender-ref ref="redoubt-appender" />
+	</root>
+	
+	<logger additivity="false" name="org.redoubt">
+		<level value="info"/>
+		<appender-ref ref="redoubt-appender"/>
+	</logger>
+	
+	<logger additivity="false" name="org.redoubt.protocol">
+		<level value="debug"/>
+		<appender-ref ref="redoubt-appender"/>
+	</logger>
+
+</log4j:configuration>

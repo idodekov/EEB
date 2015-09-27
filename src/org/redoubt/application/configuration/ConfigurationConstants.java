@@ -6,6 +6,7 @@ public class ConfigurationConstants {
     public static final String CONFIGURATION_FILE_TRANSPORTS = "conf/transports.xml";
     public static final String CONFIGURATION_FILE_GLOBAL_CONFIGURATION = "conf/global-configuration.xml";
     public static final String CONFIGURATION_FILE_PARTIES = "conf/parties.xml";
+    public static final String CONFIGURATION_FILE_LOG4J = "conf/log4j.xml";
     
     public static final String CONFIGURATION_OPTION_WORK_FOLDER = "WorkFolder";
     public static final String CONFIGURATION_OPTION_BACKUP_FOLDER = "BackupFolder";
