@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+
+<project name="Redoubt" default="package" basedir=".">
+    <target name="init" depends="clean">
+        <property name="srcdir" value="${basedir}/.."/>
+        <property name="destdir" value="${srcdir}/build/dist" />
+        <property file="${srcdir}/build/build.props" />               
+
+        <path id="cp">
+            <fileset dir="${srcdir}/lib">
+                <include name="*.jar" />
+            </fileset>
+        </path>
+        
+        <property name="debug" value="on" />
+        <property name="verbose" value="off" />
+        <property name="deprecation" value="off" />
+        <property name="optimize" value="off" />
+        <property name="source" value="1.8" />
+		<property name="target" value="1.8" />
+		
+		<property name="redoubtJar" value="${product.name}-${product.version}.jar" />
+		<property name="packageNameWindows" value="${product.name}-${product.version}.zip" />
+		<property name="packageNameLinux" value="${product.name}-${product.version}.zip" />
+
+        <echo message="Project configuration " />
+        <echo message="    srcdir  = ${srcdir}" />
+        <echo message="    destdir = ${destdir}" />
+        <echo message="    product name = ${product.name}" />
+        <echo message="    product version = ${product.version}" />
+        <echo message=" " />
+
+    </target>
+    
+    <target name="compile" depends="init">
+		<echo message="Compiling codebase" />
+		
+        <mkdir dir="${destdir}" />
+        <mkdir dir="${destdir}/classes" />
+        
+        <echo message="Compiling code" />
+        <javac 
+		srcdir="${srcdir}/src" 
+		destdir="${destdir}/classes" 
+		classpathref="cp" debug="${debug}" 
+		deprecation="on" 
+		optimize="${optimize}" 
+		source="${source}" 
+		target="${target}"/>
+    </target>
+    
+    <!-- ______________________________________________________________________ -->
+    <target name="jar" depends="compile">
+		<echo message="Generating JAR files" />
+	
+        <jar destfile="${destdir}/${redoubtJar}" basedir="${destdir}/classes">
+           <include name="org/redoubt/**" />
+            <manifest>
+                <attribute name="Product-Name" value="${product.name}" />
+				<attribute name="Product-Version" value="${product.version}" />
+            </manifest>
+        </jar>
+    </target>
+
+    <!-- ______________________________________________________________________ -->
+    <target name="package" depends="jar">
+        <echo message="Generating ZIP package" />
+
+        <zip destfile="${destdir}/${packageNameWindows}">
+            <zipfileset dir="${destdir}" prefix="lib/jars/">
+                <include name="${redoubtJar}" />
+            </zipfileset>
+            
+            <zipfileset dir="${srcdir}/conf" prefix="conf/">
+                <include name="*.xml" />
+				<include name="*.jks" />
+            </zipfileset>
+            
+            <zipfileset dir="${srcdir}/lib" prefix="lib/jars/external">
+                <include name="*.jar" />
+            </zipfileset>
+        </zip>
+		
+		<delete dir="${destdir}/classes" />
+		<delete file="${destdir}/${redoubtJar}" />
+    </target>
+
+    <!-- ______________________________________________________________________ -->
+    <target name="clean">
+    
+        <delete dir="${destdir}" />
+
+    </target>
+
+</project>
