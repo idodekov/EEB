@@ -1,0 +1,1 @@
+This folder is used to temporary store messages that are currently being processed.
