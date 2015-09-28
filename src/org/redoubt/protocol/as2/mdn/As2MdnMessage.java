@@ -121,7 +121,7 @@ public class As2MdnMessage extends As2Message {
 			throw new ProtocolException(As2HeaderDictionary.AS2_TO + " header can't be equal to [" + As2HeaderDictionary.AS2_FROM + "].");
 		}
 		
-		messageId = Utils.parseMessageID(headers.get(As2HeaderDictionary.MESSAGE_ID));
+		messageId = headers.get(As2HeaderDictionary.MESSAGE_ID);
 		if(Utils.isNullOrEmptyTrimmed(messageId)) {
 			throw new ProtocolException(As2HeaderDictionary.MESSAGE_ID + " header can't be empty. Unknown message id - rejecting the message.");
 		}

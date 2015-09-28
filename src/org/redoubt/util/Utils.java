@@ -65,18 +65,6 @@ public class Utils {
         return id;
     }
 	
-	public static String parseMessageID(String messageId) {
-		if(messageId == null) {
-			return null;
-		}
-		
-		if(messageId.startsWith("<") && messageId.endsWith(">")) {
-			return messageId.substring(1, messageId.length() - 1);
-		}
-		
-		return messageId;
-	}
-	
 	public static String createTimestamp() {
 		SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
 		format.setTimeZone(TimeZone.getTimeZone("GMT"));
