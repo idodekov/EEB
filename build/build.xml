@@ -20,8 +20,8 @@
 		<property name="target" value="1.8" />
 		
 		<property name="redoubtJar" value="${product.name}-${product.version}.jar" />
-		<property name="packageNameWindows" value="${product.name}-${product.version}.zip" />
-		<property name="packageNameLinux" value="${product.name}-${product.version}.zip" />
+		<property name="packageNameWindows" value="${product.name}-${product.version}-Windows.zip" />
+		<property name="packageNameLinux" value="${product.name}-${product.version}-Linux.tar.gz" />
 
         <echo message="Project configuration " />
         <echo message="    srcdir  = ${srcdir}" />
@@ -105,6 +105,37 @@
                 <include name="*.cmd" />
             </zipfileset>
         </zip>
+		
+		<tar destfile="${destdir}/${packageNameLinux}" compression="gzip">
+			<tarfileset dir="${destdir}" prefix="lib/jars/">
+                <include name="${redoubtJar}" />
+            </tarfileset>
+            
+            <tarfileset dir="${srcdir}/conf" prefix="conf/">
+                <include name="*.xml" />
+				<include name="*.jks" />
+            </tarfileset>
+            
+            <tarfileset dir="${srcdir}/lib" prefix="lib/jars/external">
+                <include name="*.jar" />
+            </tarfileset>
+			
+			<tarfileset dir="${srcdir}/work" prefix="work/">
+                <include name="readme.txt" />
+            </tarfileset>
+			
+			<tarfileset dir="${srcdir}/backup" prefix="backup/">
+                <include name="readme.txt" />
+            </tarfileset>
+			
+			<tarfileset dir="${srcdir}/logs" prefix="logs/">
+                <include name="readme.txt" />
+            </tarfileset>
+			
+			<tarfileset dir="${destdir}" filemode="755">
+                <include name="*.sh" />
+            </tarfileset>
+        </tar> 
 		
 		<delete dir="${destdir}/classes" />
 		<delete file="${destdir}/${redoubtJar}" />

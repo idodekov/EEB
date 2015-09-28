@@ -13,5 +13,5 @@ set OPTS=
 REM Uncomment to enable remote debugging
 REM set OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,address=5001,suspend=n,server=y %OPTS%
 
-java.exe %OPTS% -classpath "%CLASSPATH%" org.redoubt.application.StopApplication > logs/shutdown.log 2>&1
+java.exe %OPTS% -classpath "%CLASSPATH%" org.redoubt.application.StopApplication > %APPLICATION_PATH:~0,-1%/logs/shutdown.log 2>&1
 EndLocal

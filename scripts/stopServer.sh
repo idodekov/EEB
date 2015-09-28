@@ -18,4 +18,4 @@ OPTS=
 export OPTS
 
 
-java $OPTS -cp "$CP" org.redoubt.application.Application > $APPLICATION_PATH/logs/stdout.log 2>&1
+java $OPTS -cp "$CP" org.redoubt.application.StopApplication > $APPLICATION_PATH/logs/shutdown.log 2>&1
