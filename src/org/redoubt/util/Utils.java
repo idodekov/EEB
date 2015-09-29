@@ -48,6 +48,7 @@ public class Utils {
 		}
 
 		StringBuilder messageId = new StringBuilder();
+		messageId.append("<");
 		messageId.append(VersionInformation.APP_NAME);
 		messageId.append(".");
 		messageId.append(timestampParameter);
@@ -57,6 +58,7 @@ public class Utils {
 		messageId.append(sender);
 		messageId.append(".");
 		messageId.append(hostname);
+		messageId.append(">");
 		
 		String id = messageId.toString();
 		

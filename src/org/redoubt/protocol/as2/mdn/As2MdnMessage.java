@@ -88,7 +88,7 @@ public class As2MdnMessage extends As2Message {
         headers.put(As2HeaderDictionary.ACCEPT_ENCODING, "gzip,deflate");
         headers.put(As2HeaderDictionary.MIME_VERSION, As2HeaderDictionary.MIME_VERSION_1_0);
         headers.put(As2HeaderDictionary.DATE, messageDate);
-        headers.put(As2HeaderDictionary.MESSAGE_ID, "<" + messageId + ">");
+        headers.put(As2HeaderDictionary.MESSAGE_ID, messageId);
         headers.put(As2HeaderDictionary.FROM, fromEmail);
         headers.put(As2HeaderDictionary.SUBJECT, subject);
     		

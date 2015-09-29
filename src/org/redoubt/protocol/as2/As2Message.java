@@ -170,7 +170,7 @@ public class As2Message implements IMessage {
         headers.put(As2HeaderDictionary.ACCEPT_ENCODING, "gzip,deflate");
         headers.put(As2HeaderDictionary.MIME_VERSION, As2HeaderDictionary.MIME_VERSION_1_0);
         headers.put(As2HeaderDictionary.DATE, messageDate);
-        headers.put(As2HeaderDictionary.MESSAGE_ID, "<" + messageId + ">");
+        headers.put(As2HeaderDictionary.MESSAGE_ID, messageId);
         headers.put(As2HeaderDictionary.FROM, fromEmail);
         headers.put(As2HeaderDictionary.SUBJECT, subject);
         
@@ -400,6 +400,35 @@ public class As2Message implements IMessage {
 		}
 	}
 	
+	/**
+	 *
+<pre>
+   When a signed receipt request is made, the "Received-content-MIC"
+   MUST always be returned to the requester (except when corruption
+   prevents computation of the digest in accordance with the following
+   specification).  The "Received-content-MIC" MUST be calculated as
+   follows:
+
+      o  For any signed messages, the MIC to be returned is calculated
+         on the RFC1767/RFC3023 MIME header and content.
+         Canonicalization on the MIME headers MUST be performed before
+         the MIC is calculated, since the sender requesting the signed
+         receipt was also REQUIRED to canonicalize.
+
+      o  For encrypted, unsigned messages, the MIC to be returned is
+         calculated on the decrypted RFC 1767/RFC3023 MIME header and
+         content.  The content after decryption MUST be canonicalized
+         before the MIC is calculated.
+
+      o  For unsigned, unencrypted messages, the MIC MUST be calculated
+         over the message contents without the MIME or any other RFC
+         2822 headers, since these are sometimes altered or reordered by
+         Mail Transport Agents (MTAs).
+</pre>
+	 * @param digestAlg
+	 * @return
+	 * @throws Exception
+	 */
 	protected String calculateMIC(String digestAlg) throws Exception {
 		ICryptoHelper cryptoHelper = Factory.getInstance().getCryptoHelper();
 		
