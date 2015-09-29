@@ -12,12 +12,12 @@
 	</appender>
 
 	<root>
-		<level value="ERROR" />
+		<level value="debug" />
 		<appender-ref ref="redoubt-appender" />
 	</root>
 	
 	<logger additivity="false" name="org.redoubt">
-		<level value="info"/>
+		<level value="debug"/>
 		<appender-ref ref="redoubt-appender"/>
 	</logger>
 	

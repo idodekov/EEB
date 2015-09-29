@@ -27,5 +27,19 @@
 		<Setting name="name">FileSystem</Setting>
 		<Setting name="pollingInterval">2</Setting>
 	</Transport>
+	<!--Transport type="file_system">
+		<Protocol type="as2">
+			<Setting name="direction">outbound</Setting>
+			<Setting name="from">alpha</Setting>
+			<Setting name="to">id199</Setting>
+			<Setting name="url">http://10.232.14.199:4080/exchange/id199</Setting>
+			<Setting name="enforceSigning">false</Setting>
+			<Setting name="enforceEncryption">false</Setting>
+			<Setting name="productionFolder">F:\</Setting>
+		</Protocol>
+		<Setting name="folder">F:\WORK\___WORK</Setting>
+		<Setting name="name">FileSystem</Setting>
+		<Setting name="pollingInterval">2</Setting>
+	</Transport-->
 </Transports>
 
