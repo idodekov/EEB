@@ -2,6 +2,7 @@ package org.redoubt.protocol.as2;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -146,14 +147,6 @@ public class As2Message implements IMessage {
 		data.setHeader(As2HeaderDictionary.CONTENT_TYPE, As2HeaderDictionary.MIME_TYPE_APPLICATION_OCTET_STREAM);
 		data.setHeader(As2HeaderDictionary.CONTENT_TRANSFER_ENCODING, As2HeaderDictionary.TRANSFER_ENCODING_BINARY);
 
-		if(mdn) {
-			if(Utils.isNullOrEmptyTrimmed(mdnSigningAlgorithm)) {
-				mdnSigningAlgorithm = ICryptoHelper.DIGEST_SHA1;
-			}
-			
-			calculateMIC(mdnSigningAlgorithm);
-		}
-		
 		secure();
 		
 		messageDate = Utils.createTimestamp();
@@ -180,32 +173,38 @@ public class As2Message implements IMessage {
 	}
 	
 	protected void secure() throws Exception {
-        // Encrypt and/or sign the data if requested
-        if (encrypt || sign || compress) {
-        	ICertificateManager certificateManager = Factory.getInstance().getCertificateManager();
-        	ICryptoHelper cryptoHelper = Factory.getInstance().getCryptoHelper();
+        ICertificateManager certificateManager = Factory.getInstance().getCertificateManager();
+        ICryptoHelper cryptoHelper = Factory.getInstance().getCryptoHelper();
+        
+        if(mdn) {
+    		if(Utils.isNullOrEmptyTrimmed(mdnSigningAlgorithm)) {
+    			mdnSigningAlgorithm = ICryptoHelper.DIGEST_SHA1;
+    		}
+    		
+    		if(sign || encrypt) {
+    			calculateMIC(mdnSigningAlgorithm,true);
+    		} else {
+    			calculateMIC(mdnSigningAlgorithm,false);
+    		}
+        }
 
-        	// Compress the data if requested
-            if(compress) {
-            	sLogger.debug("Compression is enabled - will attempt to compress the message.");
-            	data = cryptoHelper.compress(data, compressionAlgorithm);
-            }
-        	
-            // Sign the data if requested
-            if (sign) {
-                sLogger.debug("Signing is enabled - will attempt to sign the message.");
-                X509Certificate signingCert = certificateManager.getX509Certificate(signCertAlias);
-                PrivateKey senderKey = certificateManager.getPrivateKey(signCertAlias, signCertKeyPassword.toCharArray());
+        if(compress) {
+           	sLogger.debug("Compression is enabled - will attempt to compress the message.");
+          	data = cryptoHelper.compress(data, compressionAlgorithm);
+        }
+        
+        if (sign) {
+            sLogger.debug("Signing is enabled - will attempt to sign the message.");
+            X509Certificate signingCert = certificateManager.getX509Certificate(signCertAlias);
+            PrivateKey senderKey = certificateManager.getPrivateKey(signCertAlias, signCertKeyPassword.toCharArray());
 
-                data = cryptoHelper.sign(data, signingCert, senderKey, signDigestAlgorithm);
-            }
+            data = cryptoHelper.sign(data, signingCert, senderKey, signDigestAlgorithm);
+        }
             
-            // Encrypt the data if requested
-            if (encrypt) {
-                sLogger.debug("Encryption is enabled - will attempt to encrypt the message.");
-                X509Certificate receiverCert = certificateManager.getX509Certificate(encryptCertAlias);
-                data = cryptoHelper.encrypt(data, receiverCert, encryptAlgorithm);
-            }
+        if (encrypt) {
+            sLogger.debug("Encryption is enabled - will attempt to encrypt the message.");
+            X509Certificate receiverCert = certificateManager.getX509Certificate(encryptCertAlias);
+            data = cryptoHelper.encrypt(data, receiverCert, encryptAlgorithm);
         }
     }
 	
@@ -275,11 +274,6 @@ public class As2Message implements IMessage {
         
         decryptAndVerify(as2Settings.isEncryptionEnforced(), as2Settings.isSigningEnforced());
         
-        if(Utils.isNullOrEmptyTrimmed(mdnSigningAlgorithm)) {
-        	mdnSigningAlgorithm = ICryptoHelper.DIGEST_SHA1;
-        }
-        calculateMIC(mdnSigningAlgorithm);
-        
         disposition.setStatus(Disposition.DISP_PROCESSED);
 		sLogger.debug("As2 message successfully unpackaged.");
 		
@@ -289,7 +283,10 @@ public class As2Message implements IMessage {
     	ICertificateManager certificateManager = Factory.getInstance().getCertificateManager();
     	ICryptoHelper cryptoHelper = Factory.getInstance().getCryptoHelper();
     	
-	    if (cryptoHelper.isEncrypted(data)) {
+    	boolean messageIsEncrypted = cryptoHelper.isEncrypted(data);
+    	boolean messageIsSigned = cryptoHelper.isSigned(data);
+    	
+	    if (messageIsEncrypted) {
 	       	sLogger.debug("Message is encrypted - will attempt to decrypt it.");
 	
             X509Certificate receiverCert = certificateManager.getX509Certificate(encryptCertAlias);
@@ -311,7 +308,7 @@ public class As2Message implements IMessage {
         }
 	
     		
-   		if (cryptoHelper.isSigned(data)) {
+   		if (messageIsSigned) {
    			sLogger.debug("Message is signed - will attempt to verify the signature.");
 	
    			X509Certificate senderCert = certificateManager.getX509Certificate(signCertAlias);
@@ -336,6 +333,16 @@ public class As2Message implements IMessage {
    			sLogger.debug("Message is compressed - will attempt to decompress it.");
    			data = cryptoHelper.decompress(data);
    			sLogger.debug("Message is decompressed.");
+   		}
+   		
+   		if(Utils.isNullOrEmptyTrimmed(mdnSigningAlgorithm)) {
+        	mdnSigningAlgorithm = ICryptoHelper.DIGEST_SHA1;
+        }
+   		
+   		if(messageIsSigned || messageIsEncrypted) {
+   			calculateMIC(mdnSigningAlgorithm, true);
+   		} else {
+   			calculateMIC(mdnSigningAlgorithm, false);
    		}
     }
 	
@@ -429,11 +436,16 @@ public class As2Message implements IMessage {
 	 * @return
 	 * @throws Exception
 	 */
-	protected String calculateMIC(String digestAlg) throws Exception {
+	protected String calculateMIC(String digestAlg, boolean headers) throws Exception {
 		ICryptoHelper cryptoHelper = Factory.getInstance().getCryptoHelper();
 		
 		Path workFile = FileSystemUtils.createWorkFile();
-		writeMimeDataToFile(workFile);
+		if(headers) {
+			writeMimeDataAndHeadersToFile(workFile);
+		} else {
+			writeMimeDataToFile(workFile);
+		}
+		
 		mic = cryptoHelper.calculateMIC(workFile, digestAlg);
 		
 		sLogger.debug("MIC for message with Id [" + messageId + "] is [" + mic + "].");
@@ -445,6 +457,12 @@ public class As2Message implements IMessage {
 	public void writeMimeDataToFile(Path file) throws IOException, MessagingException {
 		try (InputStream in = data.getInputStream()) {
 			Files.copy(in, file, StandardCopyOption.REPLACE_EXISTING);
+		}
+    }
+	
+	public void writeMimeDataAndHeadersToFile(Path file) throws IOException, MessagingException {
+		try (OutputStream out = Files.newOutputStream(file)) {
+			data.writeTo(out);
 		}
     }
 	
