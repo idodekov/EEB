@@ -3,7 +3,7 @@
 	<Transport type="http">
 		<Protocol type="as2">
 			<Setting name="direction">inbound</Setting>
-			<Setting name="productionFolder">F:\</Setting>
+			<Setting name="productionFolder">PRODUCE</Setting>
 			<Setting name="enforceSigning">false</Setting>
 			<Setting name="enforceEncryption">false</Setting>
 			<Setting name="to">beta</Setting>
@@ -21,13 +21,13 @@
 			<Setting name="url">http://localhost:4080/as2/</Setting>
 			<Setting name="enforceSigning">false</Setting>
 			<Setting name="enforceEncryption">false</Setting>
-			<Setting name="productionFolder">F:\</Setting>
+			<Setting name="productionFolder">PRODUCE</Setting>
 		</Protocol>
-		<Setting name="folder">F:\WORK\___WORK</Setting>
+		<Setting name="folder">E:\work\___WORK</Setting>
 		<Setting name="name">FileSystem</Setting>
 		<Setting name="pollingInterval">2</Setting>
 	</Transport>
-	<!--Transport type="file_system">
+	<Transport type="file_system">
 		<Protocol type="as2">
 			<Setting name="direction">outbound</Setting>
 			<Setting name="from">alpha</Setting>
@@ -35,11 +35,11 @@
 			<Setting name="url">http://10.232.14.199:4080/exchange/id199</Setting>
 			<Setting name="enforceSigning">false</Setting>
 			<Setting name="enforceEncryption">false</Setting>
-			<Setting name="productionFolder">F:\</Setting>
+			<Setting name="productionFolder">PRODUCE</Setting>
 		</Protocol>
-		<Setting name="folder">F:\WORK\___WORK</Setting>
+		<Setting name="folder">CONSUME</Setting>
 		<Setting name="name">FileSystem</Setting>
 		<Setting name="pollingInterval">2</Setting>
-	</Transport-->
+	</Transport>
 </Transports>
 

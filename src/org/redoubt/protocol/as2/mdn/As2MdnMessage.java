@@ -38,7 +38,7 @@ public class As2MdnMessage extends As2Message {
 		mdnType = message.getMdnType();
 		mdnSigningAlgorithm = message.getMdnSigningAlgorithm();
 		requestSignedMdn = message.isRequestSignedMdn();
-		mdn = message.isMdnReqested();
+		mdnRequested = message.isMdnReqested();
 		localParty = message.getLocalParty();
 		remoteParty = message.getRemoteParty();
 		originalMessageDate = message.getMessageDate();

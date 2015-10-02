@@ -31,6 +31,7 @@ import org.redoubt.application.VersionInformation;
 import org.redoubt.application.configuration.ConfigurationConstants;
 import org.redoubt.application.configuration.Party;
 import org.redoubt.protocol.ProtocolException;
+import org.redoubt.protocol.as2.mdn.As2MdnMessage;
 import org.redoubt.protocol.as2.mdn.Disposition;
 import org.redoubt.util.FileSystemUtils;
 import org.redoubt.util.Utils;
@@ -51,7 +52,7 @@ public class As2Message implements IMessage {
 	protected String encryptCertKeyPassword;
 	protected String encryptCertAlias;
 	protected String compressionAlgorithm;
-	protected boolean mdn;
+	protected boolean mdnRequested;
 	protected String mdnType;
 	protected String asynchronousMdnUrl;
 	protected boolean requestSignedMdn;
@@ -136,7 +137,7 @@ public class As2Message implements IMessage {
         encryptAlgorithm = localParty.getEncryptAlgorithm();
         encryptCertAlias = remoteParty.getEncryptCertAlias();
         compressionAlgorithm = localParty.getCompressionAlgorithm();
-        mdn = localParty.isRequestMdn();
+        mdnRequested = localParty.isRequestMdn();
         mdnType = localParty.getMdnType();
     	asynchronousMdnUrl = localParty.getAsynchronousMdnUrl();
     	requestSignedMdn = localParty.isRequestSignedMdn();
@@ -176,16 +177,18 @@ public class As2Message implements IMessage {
         ICertificateManager certificateManager = Factory.getInstance().getCertificateManager();
         ICryptoHelper cryptoHelper = Factory.getInstance().getCryptoHelper();
         
-        if(mdn) {
-    		if(Utils.isNullOrEmptyTrimmed(mdnSigningAlgorithm)) {
-    			mdnSigningAlgorithm = ICryptoHelper.DIGEST_SHA1;
-    		}
-    		
-    		if(sign || encrypt) {
-    			calculateMIC(mdnSigningAlgorithm,true);
-    		} else {
-    			calculateMIC(mdnSigningAlgorithm,false);
-    		}
+        if(!(this instanceof As2MdnMessage)) {
+            if(mdnRequested) {
+        		if(Utils.isNullOrEmptyTrimmed(mdnSigningAlgorithm)) {
+        			mdnSigningAlgorithm = ICryptoHelper.DIGEST_SHA1;
+        		}
+        		
+            	if(sign || encrypt) {
+            		calculateMIC(mdnSigningAlgorithm,true);
+            	} else {
+            		calculateMIC(mdnSigningAlgorithm,false);
+            	}
+            }
         }
 
         if(compress) {
@@ -209,7 +212,7 @@ public class As2Message implements IMessage {
     }
 	
 	protected void prepreOutboundMdnOptions() {
-		if(mdn) {
+		if(mdnRequested) {
         	sLogger.debug("MDN is requested - adding appropriate headers.");
         	headers.put(As2HeaderDictionary.DISPOSITION_NOTIFICATION_TO, fromEmail);
         	
@@ -284,7 +287,6 @@ public class As2Message implements IMessage {
     	ICryptoHelper cryptoHelper = Factory.getInstance().getCryptoHelper();
     	
     	boolean messageIsEncrypted = cryptoHelper.isEncrypted(data);
-    	boolean messageIsSigned = cryptoHelper.isSigned(data);
     	
 	    if (messageIsEncrypted) {
 	       	sLogger.debug("Message is encrypted - will attempt to decrypt it.");
@@ -307,6 +309,7 @@ public class As2Message implements IMessage {
         	}
         }
 	
+	    boolean messageIsSigned = cryptoHelper.isSigned(data);
     		
    		if (messageIsSigned) {
    			sLogger.debug("Message is signed - will attempt to verify the signature.");
@@ -339,17 +342,19 @@ public class As2Message implements IMessage {
         	mdnSigningAlgorithm = ICryptoHelper.DIGEST_SHA1;
         }
    		
-   		if(messageIsSigned || messageIsEncrypted) {
-   			calculateMIC(mdnSigningAlgorithm, true);
-   		} else {
-   			calculateMIC(mdnSigningAlgorithm, false);
+   		if(!(this instanceof As2MdnMessage)) {
+       		if(messageIsSigned || messageIsEncrypted) {
+       			calculateMIC(mdnSigningAlgorithm, true);
+       		} else {
+       			calculateMIC(mdnSigningAlgorithm, false);
+       		}
    		}
     }
 	
 	protected void prepreInboundMdnOptions() {
 		String dispositionNotificationTo = headers.get(As2HeaderDictionary.DISPOSITION_NOTIFICATION_TO);
         if(!Utils.isNullOrEmptyTrimmed(dispositionNotificationTo)) {
-        	mdn = true;
+        	mdnRequested = true;
         	
         	String asyncUrl = headers.get(As2HeaderDictionary.RECEIPT_DELIVERY_OPTIONS);
         	if(Utils.isNullOrEmptyTrimmed(asyncUrl)) {
@@ -491,11 +496,11 @@ public class As2Message implements IMessage {
 	}
 
 	public boolean isMdnReqested() {
-		return mdn;
+		return mdnRequested;
 	}
 
 	public void setMdnRequested(boolean mdn) {
-		this.mdn = mdn;
+		this.mdnRequested = mdn;
 	}
 
 	public String getMdnType() {

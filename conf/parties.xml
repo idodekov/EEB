@@ -1,11 +1,11 @@
 <Parties>
 	<Party>
 		<Setting name="partyId">alpha</Setting>
-		<Setting name="sign">false</Setting>
+		<Setting name="sign">true</Setting>
 		<Setting name="signCertAlias">sign1</Setting>
 		<Setting name="signCertKeyPassword">redoubt</Setting>
 		<Setting name="signDigestAlgorithm">sha1</Setting>
-		<Setting name="encrypt">false</Setting>
+		<Setting name="encrypt">true</Setting>
 		<Setting name="encryptCertAlias">encrypt1</Setting>
 		<Setting name="encryptCertKeyPassword">redoubt</Setting>
 		<Setting name="encryptAlgorithm">3des</Setting>
@@ -13,8 +13,8 @@
 		<Setting name="compressAlgorithm">zlib</Setting>
 		<Setting name="requestMdn">true</Setting>
 		<Setting name="mdnType">asynchronous</Setting>
-		<Setting name="asynchronousMdnUrl">http://localhost:4080/as2/</Setting>
-		<Setting name="requestSignedMdn">false</Setting>
+		<Setting name="asynchronousMdnUrl">http://10.134.9.18:4080/as2/</Setting>
+		<Setting name="requestSignedMdn">true</Setting>
 		<Setting name="mdnSigningAlgorithm">sha1</Setting>
 	</Party>
 	<Party>
