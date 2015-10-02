@@ -27,5 +27,5 @@ public class ConfigurationConstants {
     public static final String MDN_TYPE_SYNCHRONOUS = "synchronous";
     public static final String MDN_TYPE_ASYNCHRONOUS = "asynchronous";
     
-    public static final long MDN_ASYNCHRONOUS_DELAY = 10 * 1000;
+    public static final long MDN_ASYNCHRONOUS_DELAY = 3 * 1000;
 }
