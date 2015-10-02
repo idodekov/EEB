@@ -35,9 +35,9 @@ public class HttpClientUtils {
             
             sLogger.debug("Sending POST request to " + url);
             
-            if(protocol == null) {
+            if(protocol != null) {
             	As2MdnResponseHandler responseHandler = new As2MdnResponseHandler(protocol);
-                httpclient.execute(httpPost, responseHandler);
+                boolean result = httpclient.execute(httpPost, responseHandler);
             } else {
             	httpclient.execute(httpPost);
             }
