@@ -37,7 +37,7 @@ public class HttpClientUtils {
             
             if(protocol != null) {
             	As2MdnResponseHandler responseHandler = new As2MdnResponseHandler(protocol);
-                boolean result = httpclient.execute(httpPost, responseHandler);
+                httpclient.execute(httpPost, responseHandler);
             } else {
             	httpclient.execute(httpPost);
             }
