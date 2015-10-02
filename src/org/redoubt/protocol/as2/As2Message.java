@@ -177,23 +177,23 @@ public class As2Message implements IMessage {
         ICertificateManager certificateManager = Factory.getInstance().getCertificateManager();
         ICryptoHelper cryptoHelper = Factory.getInstance().getCryptoHelper();
         
-        if(!(this instanceof As2MdnMessage)) {
-            if(mdnRequested) {
-        		if(Utils.isNullOrEmptyTrimmed(mdnSigningAlgorithm)) {
-        			mdnSigningAlgorithm = ICryptoHelper.DIGEST_SHA1;
-        		}
-        		
-            	if(sign || encrypt) {
-            		calculateMIC(mdnSigningAlgorithm,true);
-            	} else {
-            		calculateMIC(mdnSigningAlgorithm,false);
-            	}
-            }
-        }
-
         if(compress) {
            	sLogger.debug("Compression is enabled - will attempt to compress the message.");
           	data = cryptoHelper.compress(data, compressionAlgorithm);
+        }
+        
+        if(!(this instanceof As2MdnMessage)) {
+            if(mdnRequested) {
+                if(Utils.isNullOrEmptyTrimmed(mdnSigningAlgorithm)) {
+                    mdnSigningAlgorithm = ICryptoHelper.DIGEST_SHA1;
+                }
+                
+                if(sign || encrypt) {
+                    calculateMIC(mdnSigningAlgorithm,true);
+                } else {
+                    calculateMIC(mdnSigningAlgorithm,false);
+                }
+            }
         }
         
         if (sign) {
@@ -332,22 +332,22 @@ public class As2Message implements IMessage {
         	}
         }
    		
+   		if(!(this instanceof As2MdnMessage)) {
+            if(Utils.isNullOrEmptyTrimmed(mdnSigningAlgorithm)) {
+                mdnSigningAlgorithm = ICryptoHelper.DIGEST_SHA1;
+            }
+         
+            if(messageIsSigned || messageIsEncrypted) {
+                calculateMIC(mdnSigningAlgorithm, true);
+            } else {
+                calculateMIC(mdnSigningAlgorithm, false);
+            }
+        }
+   		
    		if (cryptoHelper.isCompressed(data)) {
    			sLogger.debug("Message is compressed - will attempt to decompress it.");
    			data = cryptoHelper.decompress(data);
    			sLogger.debug("Message is decompressed.");
-   		}
-   		
-   		if(Utils.isNullOrEmptyTrimmed(mdnSigningAlgorithm)) {
-        	mdnSigningAlgorithm = ICryptoHelper.DIGEST_SHA1;
-        }
-   		
-   		if(!(this instanceof As2MdnMessage)) {
-       		if(messageIsSigned || messageIsEncrypted) {
-       			calculateMIC(mdnSigningAlgorithm, true);
-       		} else {
-       			calculateMIC(mdnSigningAlgorithm, false);
-       		}
    		}
     }
 	
@@ -445,6 +445,7 @@ public class As2Message implements IMessage {
 		ICryptoHelper cryptoHelper = Factory.getInstance().getCryptoHelper();
 		
 		Path workFile = FileSystemUtils.createWorkFile();
+		
 		if(headers) {
 			writeMimeDataAndHeadersToFile(workFile);
 		} else {

@@ -9,7 +9,7 @@
 		<Setting name="encryptCertAlias">encrypt1</Setting>
 		<Setting name="encryptCertKeyPassword">redoubt</Setting>
 		<Setting name="encryptAlgorithm">3des</Setting>
-		<Setting name="compress">false</Setting>
+		<Setting name="compress">true</Setting>
 		<Setting name="compressAlgorithm">zlib</Setting>
 		<Setting name="requestMdn">true</Setting>
 		<Setting name="mdnType">asynchronous</Setting>

@@ -6,7 +6,7 @@
 			<Setting name="productionFolder">PRODUCE</Setting>
 			<Setting name="enforceSigning">false</Setting>
 			<Setting name="enforceEncryption">false</Setting>
-			<Setting name="to">beta</Setting>
+			<Setting name="to">alpha</Setting>
 		</Protocol>
 		<Setting name="name">AS2 HTTP server</Setting>
 		<Setting name="port">4080</Setting>
