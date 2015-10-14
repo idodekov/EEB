@@ -180,9 +180,9 @@ public class As2Message implements IMessage {
         if(!(this instanceof As2MdnMessage)) {
             if(mdnRequested) {
                 if(!sign && (compress || encrypt)) {
-                    calculateMIC(mdnSigningAlgorithm,true);
+                    calculateMIC(true);
                 } else if(!sign) {
-                    calculateMIC(mdnSigningAlgorithm,false);
+                    calculateMIC(false);
                 }
             }
         }
@@ -195,7 +195,7 @@ public class As2Message implements IMessage {
         if(!(this instanceof As2MdnMessage)) {
             if(mdnRequested) {
                 if(sign) {
-                    calculateMIC(mdnSigningAlgorithm,true);
+                    calculateMIC(true);
                 }
             }
         }
@@ -340,7 +340,7 @@ public class As2Message implements IMessage {
    		
    		if(!(this instanceof As2MdnMessage)) {
             if(messageIsSigned) {
-                calculateMIC(mdnSigningAlgorithm, true);
+                calculateMIC(true);
             }
         }
    		
@@ -352,9 +352,9 @@ public class As2Message implements IMessage {
    		
    		if(!(this instanceof As2MdnMessage)) {
             if(!messageIsSigned && (messageIsEncrypted || isCompressed)) {
-                calculateMIC(mdnSigningAlgorithm, true);
+                calculateMIC(true);
             } else if(!messageIsSigned) {
-                calculateMIC(mdnSigningAlgorithm, false);
+                calculateMIC(false);
             }
         }
     }
@@ -449,7 +449,7 @@ public class As2Message implements IMessage {
 	 * @return
 	 * @throws Exception
 	 */
-	protected String calculateMIC(String digestAlg, boolean headers) throws Exception {
+	protected String calculateMIC(boolean headers) throws Exception {
 		ICryptoHelper cryptoHelper = Factory.getInstance().getCryptoHelper();
 		
 		if(Utils.isNullOrEmptyTrimmed(mdnSigningAlgorithm)) {
@@ -464,7 +464,7 @@ public class As2Message implements IMessage {
 			writeMimeDataToFile(workFile);
 		}
 		
-		mic = cryptoHelper.calculateMIC(workFile, digestAlg);
+		mic = cryptoHelper.calculateMIC(workFile, mdnSigningAlgorithm);
 		
 		sLogger.debug("MIC for message with Id [" + messageId + "] is [" + mic + "].");
 		FileSystemUtils.removeWorkFile(workFile);
